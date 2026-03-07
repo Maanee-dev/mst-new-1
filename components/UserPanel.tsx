@@ -10,6 +10,8 @@ const UserPanel: React.FC = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [fullName, setFullName] = useState('');
+  const [newsletterSubscribed, setNewsletterSubscribed] = useState(false);
+  const [agreedToTerms, setAgreedToTerms] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
@@ -122,6 +124,10 @@ const UserPanel: React.FC = () => {
       setError('Password must be at least 6 characters.');
       return;
     }
+    if (!agreedToTerms) {
+      setError('You must agree to the Terms and Conditions.');
+      return;
+    }
     setLoading(true);
     setError(null);
     const processedEmail = email.trim().toLowerCase();
@@ -132,6 +138,7 @@ const UserPanel: React.FC = () => {
         options: {
           data: {
             full_name: fullName,
+            newsletter_subscribed: newsletterSubscribed,
           },
         },
       });
@@ -274,6 +281,38 @@ const UserPanel: React.FC = () => {
                         {showPassword ? 'Hide' : 'Show'}
                       </button>
                     </div>
+
+                    {authMode === 'signup' && (
+                      <div className="space-y-3 pt-2">
+                        <label className="flex items-start gap-3 cursor-pointer group select-none">
+                          <div className="relative flex items-center pt-0.5">
+                            <input
+                              type="checkbox"
+                              checked={newsletterSubscribed}
+                              onChange={(e) => setNewsletterSubscribed(e.target.checked)}
+                              className="w-4 h-4 rounded border-slate-300 text-sky-600 focus:ring-sky-500 transition-all cursor-pointer"
+                            />
+                          </div>
+                          <span className="text-xs text-slate-500 dark:text-slate-400 group-hover:text-slate-700 dark:group-hover:text-slate-200 transition-colors">
+                            Subscribe to our newsletter for exclusive offers.
+                          </span>
+                        </label>
+
+                        <label className="flex items-start gap-3 cursor-pointer group select-none">
+                          <div className="relative flex items-center pt-0.5">
+                            <input
+                              type="checkbox"
+                              checked={agreedToTerms}
+                              onChange={(e) => setAgreedToTerms(e.target.checked)}
+                              className="w-4 h-4 rounded border-slate-300 text-sky-600 focus:ring-sky-500 transition-all cursor-pointer"
+                            />
+                          </div>
+                          <span className="text-xs text-slate-500 dark:text-slate-400 group-hover:text-slate-700 dark:group-hover:text-slate-200 transition-colors">
+                            I agree to the <a href="/terms" target="_blank" rel="noopener noreferrer" className="underline hover:text-sky-500 font-medium" onClick={(e) => e.stopPropagation()}>Terms and Conditions</a>.
+                          </span>
+                        </label>
+                      </div>
+                    )}
 
                     {successMessage && (
                       <div className="p-3 bg-emerald-50 dark:bg-emerald-900/10 rounded-lg text-xs text-emerald-600 text-center">
