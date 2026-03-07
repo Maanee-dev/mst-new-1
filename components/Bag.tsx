@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { X, ShoppingBag, Trash2, ArrowRight, CheckCircle2 } from 'lucide-react';
+import { X, ShoppingBag, Trash2, ArrowRight, CheckCircle2, UserPlus, Sparkles } from 'lucide-react';
 import { useBag } from '../context/BagContext';
 import { supabase } from '../lib/supabase';
 import { useNavigate } from 'react-router-dom';
@@ -25,7 +25,10 @@ const Bag: React.FC<BagProps> = ({ isOpen, onClose }) => {
     setStartDate, 
     setEndDate, 
     setAdults, 
-    setChildrenCount
+    setChildrenCount,
+    setIsUserPanelOpen,
+    allOffers,
+    addItem
   } = useBag();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
@@ -37,6 +40,22 @@ const Bag: React.FC<BagProps> = ({ isOpen, onClose }) => {
     phone: '',
     notes: ''
   });
+
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [expandedResortId, setExpandedResortId] = useState<string | null>(null);
+
+  React.useEffect(() => {
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      setIsLoggedIn(!!user);
+      if (user) {
+        setFormData(prev => ({
+          ...prev,
+          name: prev.name || user.user_metadata?.full_name || '',
+          email: prev.email || user.email || ''
+        }));
+      }
+    });
+  }, [isOpen]);
 
   const handleStartExploring = () => {
     onClose();
@@ -141,33 +160,122 @@ const Bag: React.FC<BagProps> = ({ isOpen, onClose }) => {
                 <div className="space-y-8">
                   {/* Item List */}
                   <div className="space-y-4">
-                    {items.map(item => (
-                      <div key={item.id} className="flex gap-4 group">
-                        <div className="w-20 h-20 rounded-2xl overflow-hidden flex-shrink-0 bg-slate-100 dark:bg-slate-800">
-                          <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <div className="flex justify-between items-start">
-                            <div className="pr-2">
-                              <span className="text-[8px] font-black text-sky-500 uppercase tracking-widest block mb-1">{item.type}</span>
-                              <h4 className="text-sm font-serif font-bold text-slate-900 dark:text-white leading-tight break-words">{item.name}</h4>
+                    {items.map(item => {
+                      const resortOffers = item.type === 'resort' 
+                        ? allOffers.filter(o => o.resortId === item.id) 
+                        : [];
+                      
+                      return (
+                        <div key={item.id} className="flex flex-col gap-4 group bg-slate-50 dark:bg-slate-800/50 p-3 rounded-2xl">
+                          <div className="flex gap-4">
+                            <div className="w-20 h-20 rounded-xl overflow-hidden flex-shrink-0 bg-slate-100 dark:bg-slate-800">
+                              <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
                             </div>
-                            <button 
-                              onClick={() => removeItem(item.id)}
-                              className="p-1 text-slate-300 hover:text-red-500 transition-colors"
-                            >
-                              <Trash2 size={14} />
-                            </button>
+                            <div className="flex-1 min-w-0">
+                              <div className="flex justify-between items-start">
+                                <div className="pr-2">
+                                  <span className="text-[8px] font-black text-sky-500 uppercase tracking-widest block mb-1">{item.type}</span>
+                                  <h4 className="text-sm font-serif font-bold text-slate-900 dark:text-white leading-tight break-words">{item.name}</h4>
+                                </div>
+                                <button 
+                                  onClick={() => removeItem(item.id)}
+                                  className="p-1 text-slate-300 hover:text-red-500 transition-colors"
+                                >
+                                  <Trash2 size={14} />
+                                </button>
+                              </div>
+                              {item.price && (
+                                <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mt-2">
+                                  {typeof item.price === 'number' ? `From US$ ${item.price.toLocaleString()}` : item.price}
+                                </p>
+                              )}
+                              
+                              {/* Show available offers button */}
+                              {resortOffers.length > 0 && (
+                                <button 
+                                  onClick={() => setExpandedResortId(expandedResortId === item.id ? null : item.id)}
+                                  className="mt-3 text-[9px] font-black uppercase tracking-widest text-sky-500 flex items-center gap-1 hover:text-sky-600 transition-colors"
+                                >
+                                  <Sparkles size={10} />
+                                  {resortOffers.length} Available Offer{resortOffers.length > 1 ? 's' : ''}
+                                </button>
+                              )}
+                            </div>
                           </div>
-                          {item.price && (
-                            <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mt-2">
-                              {typeof item.price === 'number' ? `From US$ ${item.price.toLocaleString()}` : item.price}
-                            </p>
-                          )}
+
+                          {/* Expanded Offers List */}
+                          <AnimatePresence>
+                            {expandedResortId === item.id && (
+                              <motion.div
+                                initial={{ height: 0, opacity: 0 }}
+                                animate={{ height: 'auto', opacity: 1 }}
+                                exit={{ height: 0, opacity: 0 }}
+                                className="overflow-hidden"
+                              >
+                                <div className="pt-2 space-y-2 border-t border-slate-200 dark:border-white/10 mt-2">
+                                  {resortOffers.map(offer => {
+                                    const isOfferInBag = items.some(i => i.id === offer.id);
+                                    return (
+                                      <div key={offer.id} className="flex items-center justify-between bg-white dark:bg-slate-900 p-3 rounded-xl border border-slate-100 dark:border-white/5">
+                                        <div className="flex-1 pr-4">
+                                          <h5 className="text-[10px] font-bold text-slate-900 dark:text-white mb-1">{offer.title}</h5>
+                                          <p className="text-[9px] text-slate-500 dark:text-slate-400 line-clamp-1">{offer.description}</p>
+                                        </div>
+                                        <button
+                                          onClick={() => {
+                                            if (!isOfferInBag) {
+                                              addItem({
+                                                id: offer.id,
+                                                type: 'offer',
+                                                name: offer.title,
+                                                image: offer.image,
+                                                slug: offer.resortSlug,
+                                                price: offer.price,
+                                                details: offer.resortName,
+                                                resortId: offer.resortId
+                                              });
+                                            }
+                                          }}
+                                          disabled={isOfferInBag}
+                                          className={`w-6 h-6 rounded-full flex items-center justify-center transition-colors ${isOfferInBag ? 'bg-emerald-500 text-white' : 'bg-slate-100 dark:bg-slate-800 text-slate-400 hover:bg-sky-500 hover:text-white'}`}
+                                        >
+                                          {isOfferInBag ? <CheckCircle2 size={12} /> : <UserPlus size={12} />}
+                                        </button>
+                                      </div>
+                                    );
+                                  })}
+                                </div>
+                              </motion.div>
+                            )}
+                          </AnimatePresence>
                         </div>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
+
+                  {/* Member Offers Section */}
+                  {!isLoggedIn && (
+                    <div className="bg-gradient-to-br from-slate-900 to-slate-800 dark:from-white dark:to-slate-200 rounded-2xl p-6 text-white dark:text-slate-900 shadow-xl relative overflow-hidden group cursor-pointer" onClick={() => setIsUserPanelOpen(true)}>
+                      <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+                        <Sparkles size={80} />
+                      </div>
+                      <div className="relative z-10">
+                        <div className="flex items-center gap-2 mb-2">
+                          <UserPlus size={16} className="text-sky-400 dark:text-sky-600" />
+                          <span className="text-[9px] font-black uppercase tracking-widest text-sky-400 dark:text-sky-600">Member Exclusive</span>
+                        </div>
+                        <h3 className="text-lg font-serif font-bold mb-2">Unlock Member Prices</h3>
+                        <p className="text-xs opacity-80 mb-4 leading-relaxed">
+                          Sign up to access secret offers and save up to 15% on your Maldivian escape.
+                        </p>
+                        <button 
+                          className="text-[9px] font-black uppercase tracking-widest border-b border-white/30 dark:border-slate-900/30 pb-1 hover:border-white dark:hover:border-slate-900 transition-colors"
+                        >
+                          Join for Free
+                        </button>
+                      </div>
+                    </div>
+                  )}
 
                   {/* Inquiry Form */}
                   {!isSubmitted ? (

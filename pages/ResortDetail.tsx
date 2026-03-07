@@ -249,6 +249,19 @@ const ResortDetail: React.FC = () => {
     }
   }, [loading, resort]);
 
+  const applicableOffers = useMemo(() => {
+    if (!quoteData.checkIn || !quoteData.checkOut) return [];
+    const start = new Date(quoteData.checkIn);
+    const end = new Date(quoteData.checkOut);
+    
+    return resortOffers.filter(offer => {
+      if (!offer.startDate || !offer.endDate) return false;
+      const offerStart = new Date(offer.startDate);
+      const offerEnd = new Date(offer.endDate);
+      return start >= offerStart && start <= offerEnd;
+    });
+  }, [quoteData.checkIn, quoteData.checkOut, resortOffers]);
+
   const handleQuoteSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!resort) return;
@@ -256,6 +269,11 @@ const ResortDetail: React.FC = () => {
     try {
       const fullPhone = `${quoteData.countryCode} ${quoteData.customerPhone}`;
       
+      let finalNotes = quoteData.notes;
+      if (applicableOffers.length > 0) {
+        finalNotes += `\n\n[SYSTEM] Applied Offers: ${applicableOffers.map(o => o.title).join(', ')}`;
+      }
+
       const { error } = await supabase.from('inquiries').insert({
         inquiry_type: 'resort_specific',
         customer_name: quoteData.customerName,
@@ -268,7 +286,7 @@ const ResortDetail: React.FC = () => {
         check_out: quoteData.checkOut,
         room_type: quoteData.roomType,
         meal_plan: quoteData.mealPlan,
-        notes: quoteData.notes
+        notes: finalNotes
       });
 
       if (error) throw error;
@@ -573,38 +591,7 @@ const ResortDetail: React.FC = () => {
         </div>
       )}
 
-      {/* Offers Section */}
-      {resortOffers.length > 0 && (
-        <section className="py-16 md:py-24 bg-amber-50/30 dark:bg-amber-950/10 border-y-[1px] border-amber-100/50 dark:border-amber-900/20 transition-colors">
-          <div className="max-w-[1440px] mx-auto px-6 lg:px-12">
-            <div className="text-center mb-16 reveal">
-              <span className="text-[11px] font-black text-amber-500 uppercase tracking-[1em] mb-6 block">Limited Engagements</span>
-              <h3 className="text-3xl md:text-6xl font-serif font-bold text-slate-900 dark:text-white tracking-tighter leading-tight transition-colors">Bespoke Privileges.</h3>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 lg:gap-12">
-              {resortOffers.map((offer) => (
-                <div key={offer.id} className="reveal bg-white dark:bg-slate-900 rounded-[2.5rem] md:rounded-[3rem] p-8 md:p-16 shadow-xl border border-amber-50 dark:border-white/5 flex flex-col md:flex-row gap-8 md:gap-10 items-center transition-colors">
-                   <div className="w-full md:w-1/3 aspect-square rounded-[1.5rem] md:rounded-[2rem] overflow-hidden bg-slate-100 dark:bg-slate-800">
-                      <img src={offer.image} className="w-full h-full object-cover" alt={offer.title} />
-                   </div>
-                   <div className="flex-1 w-full text-center md:text-left">
-                      <div className="flex flex-wrap justify-center md:justify-start items-center gap-4 mb-4">
-                         <span className="bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 px-4 py-1.5 rounded-full text-[9px] font-black uppercase tracking-widest">{offer.discount}</span>
-                         <span className="text-[9px] font-black text-slate-400 dark:text-slate-600 uppercase tracking-widest">{offer.category}</span>
-                      </div>
-                      <h4 className="text-2xl md:text-3xl font-serif font-bold text-slate-900 dark:text-white mb-6">{offer.title}</h4>
-                      <p className="text-slate-500 dark:text-slate-400 text-[11px] font-black uppercase tracking-[0.4em] mb-8 leading-loose transition-colors">Experience the archipelago with negotiated rates curated for your vision.</p>
-                      <button onClick={() => {
-                        const form = document.getElementById('inquiry-form');
-                        form?.scrollIntoView({ behavior: 'smooth' });
-                      }} className="text-[10px] font-black text-slate-950 dark:text-white border-b border-slate-950 dark:border-white pb-1 hover:text-amber-500 hover:border-amber-500 transition-all uppercase tracking-widest">Secure This Offer</button>
-                   </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-      )}
+
 
       {/* Residences Section */}
       {resort.roomTypes && resort.roomTypes.length > 0 && (
@@ -808,6 +795,30 @@ const ResortDetail: React.FC = () => {
               <p className="text-slate-400 text-lg md:text-xl lg:text-2xl leading-relaxed opacity-80 uppercase tracking-[0.2em] font-medium max-w-md mx-auto lg:mx-0">
                 {formStep === 1 ? "Tell us about yourself." : formStep === 2 ? "When would you like to visit?" : "Choose your stay preferences."}
               </p>
+
+              {resortOffers.length > 0 && (
+                <div className="mt-12 animate-in fade-in slide-in-from-bottom-8 duration-1000">
+                  <span className="text-[10px] font-black text-amber-500 uppercase tracking-[0.2em] mb-6 block">
+                    {applicableOffers.length > 0 ? 'Offers Applied' : 'Available Offers'}
+                  </span>
+                  <div className="space-y-4 max-w-md">
+                    {resortOffers.map(offer => {
+                      const isApplied = applicableOffers.find(o => o.id === offer.id);
+                      return (
+                        <div key={offer.id} className={`p-6 rounded-2xl border transition-all duration-500 ${isApplied ? 'bg-amber-500/10 border-amber-500/50' : 'bg-white/5 border-white/5 opacity-60 hover:opacity-100'}`}>
+                            <div className="flex justify-between items-start mb-2">
+                              <span className={`text-[9px] font-black uppercase tracking-widest px-2 py-1 rounded-full ${isApplied ? 'bg-amber-500 text-slate-950' : 'bg-white/10 text-white'}`}>{offer.discount}</span>
+                              {isApplied && <Check size={14} className="text-amber-500" />}
+                            </div>
+                            <h5 className="text-lg font-serif font-bold text-white mb-1">{offer.title}</h5>
+                            <p className="text-[10px] text-slate-400 leading-relaxed line-clamp-2">{offer.description}</p>
+                            {offer.startDate && <p className="text-[9px] text-slate-500 mt-2 uppercase tracking-widest">Valid: {new Date(offer.startDate).toLocaleDateString()} - {new Date(offer.endDate).toLocaleDateString()}</p>}
+                        </div>
+                      )
+                    })}
+                  </div>
+                </div>
+              )}
            </div>
            
            <div className="reveal delay-300 w-full">
@@ -865,8 +876,8 @@ const ResortDetail: React.FC = () => {
                              <button onClick={() => changeMonth(1)} className="text-white/40 hover:text-white transition-colors p-2 text-lg">&rarr;</button>
                           </div>
                           <div className="grid grid-cols-7 gap-1 mb-4">
-                             {['S','M','T','W','T','F','S'].map(d => (
-                               <div key={d} className="text-center text-[8px] font-black text-white/20">{d}</div>
+                             {['S','M','T','W','T','F','S'].map((d, i) => (
+                               <div key={i} className="text-center text-[8px] font-black text-white/20">{d}</div>
                              ))}
                           </div>
                           <div className="grid grid-cols-7 gap-1">

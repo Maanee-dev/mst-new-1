@@ -109,6 +109,7 @@ export interface BagItem {
   slug?: string;
   price?: number | string;
   details?: string;
+  resortId?: string;
 }
 
 export type StoryCategory = 'Dispatch' | 'Guide' | 'Update' | 'Tip';

@@ -38,6 +38,7 @@ import ThankYou from './pages/ThankYou.tsx';
 
 import { BagProvider, useBag } from './context/BagContext.tsx';
 import DiscoveryFeed from './components/DiscoveryFeed.tsx';
+import UserPanel from './components/UserPanel.tsx';
 
 const ScrollToTopOnRoute = () => {
   const { pathname } = useLocation();
@@ -53,6 +54,7 @@ const AppContent: React.FC = () => {
   return (
     <BrowserRouter>
       <ScrollToTopOnRoute />
+      <UserPanel />
       {!isDiscoveryMode && <Navbar />}
       <Routes>
         <Route path="/" element={<Home />} />

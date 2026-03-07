@@ -1,12 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { X, Heart, ShoppingBag, User, Trash2, LogOut, Mail, Lock, UserPlus, LogIn } from 'lucide-react';
+import { X, Heart, ShoppingBag, User, Trash2, LogOut, Mail, Lock, Chrome, Star, Gift, Shield } from 'lucide-react';
 import { useBag } from '../context/BagContext';
 import { supabase } from '../lib/supabase';
 
 const UserPanel: React.FC = () => {
-  const { likedResorts, toggleLike, items, removeItem, isUserPanelOpen, setIsUserPanelOpen } = useBag();
-  const [user, setUser] = useState<any>(null);
+  const { likedResorts, toggleLike, items, removeItem, isUserPanelOpen, setIsUserPanelOpen, memberStatus, memberDiscount, user } = useBag();
   const [authMode, setAuthMode] = useState<'login' | 'signup' | 'profile'>('login');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -23,46 +22,47 @@ const UserPanel: React.FC = () => {
   };
 
   useEffect(() => {
-    supabase.auth.getUser().then(({ data: { user } }) => {
-      setUser(user);
-      if (user) setAuthMode('profile');
-    });
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user ?? null);
-      if (session?.user) setAuthMode('profile');
-      else setAuthMode('login');
-    });
-
-    return () => subscription.unsubscribe();
-  }, []);
+    if (user) {
+      setAuthMode('profile');
+    } else {
+      setAuthMode('login');
+    }
+  }, [user]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError(null);
     const processedEmail = email.trim().toLowerCase();
-    console.log('Attempting login for:', processedEmail);
     try {
       const { data, error } = await supabase.auth.signInWithPassword({ 
         email: processedEmail, 
         password 
       });
-      if (error) {
-        console.error('Login error:', error);
-        throw error;
-      }
-      console.log('Login successful:', data.user?.email);
+      if (error) throw error;
       onClose();
     } catch (err: any) {
-      if (err.message === 'Invalid login credentials') {
-        setError('Invalid email or password. If you haven\'t created an account, please use the "Sign Up" tab. If you have, ensure your email is confirmed.');
-      } else if (err.message === 'Email not confirmed') {
-        setError('Please confirm your email address. Check your inbox for the confirmation link.');
-      } else {
-        setError(err.message);
-      }
+      setError(err.message === 'Invalid login credentials' 
+        ? 'Invalid email or password.' 
+        : err.message);
     } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleGoogleLogin = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: `${window.location.origin}`,
+        },
+      });
+      if (error) throw error;
+    } catch (err: any) {
+      setError(err.message);
       setLoading(false);
     }
   };
@@ -79,7 +79,7 @@ const UserPanel: React.FC = () => {
         redirectTo: `${window.location.origin}/reset-password`,
       });
       if (error) throw error;
-      alert('Password reset link sent to your email!');
+      alert('Password reset link sent!');
     } catch (err: any) {
       setError(err.message);
     } finally {
@@ -90,7 +90,7 @@ const UserPanel: React.FC = () => {
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
     if (password.length < 6) {
-      setError('Password must be at least 6 characters long.');
+      setError('Password must be at least 6 characters.');
       return;
     }
     setLoading(true);
@@ -109,10 +109,9 @@ const UserPanel: React.FC = () => {
       if (error) throw error;
       
       if (data.session) {
-        // Email confirmation is disabled, user is logged in
         onClose();
       } else {
-        setSuccessMessage('Account created! Please check your email for a confirmation link before signing in.');
+        setSuccessMessage('Account created! Please check your email.');
         setAuthMode('login');
       }
     } catch (err: any) {
@@ -145,273 +144,291 @@ const UserPanel: React.FC = () => {
     <AnimatePresence>
       {isUserPanelOpen && (
         <>
-          {/* Backdrop */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={onClose}
-            className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[700]"
+            className="fixed inset-0 bg-black/40 backdrop-blur-sm z-[700]"
           />
 
-          {/* Panel */}
           <motion.div
-            initial={{ x: '-100%' }}
+            initial={{ x: '100%' }}
             animate={{ x: 0 }}
-            exit={{ x: '-100%' }}
-            transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-            className="fixed top-0 left-0 h-full w-full max-w-md bg-white dark:bg-slate-900 z-[701] shadow-2xl flex flex-col"
+            exit={{ x: '100%' }}
+            transition={{ type: 'spring', damping: 30, stiffness: 300 }}
+            className="fixed top-0 right-0 h-full w-full max-w-sm bg-white dark:bg-slate-950 z-[701] shadow-2xl flex flex-col border-l border-slate-100 dark:border-white/5"
           >
-            {/* Header */}
-            <div className="p-8 border-b border-slate-100 dark:border-white/5 flex items-center justify-between">
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 rounded-full bg-sky-50 dark:bg-sky-900/20 flex items-center justify-center text-sky-500">
-                  {user ? (
-                    <div className="w-full h-full rounded-full bg-sky-500 flex items-center justify-center text-white font-bold">
-                      {user.user_metadata?.full_name?.[0] || user.email?.[0].toUpperCase()}
-                    </div>
-                  ) : (
-                    <User size={24} />
-                  )}
-                </div>
-                <div>
-                  <h2 className="text-sm font-black uppercase tracking-[0.2em] text-slate-900 dark:text-white">
-                    {user ? (user.is_anonymous ? 'Guest Explorer' : (user.user_metadata?.full_name || 'Explorer')) : 'Your Profile'}
-                  </h2>
-                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
-                    {user ? (user.is_anonymous ? 'Anonymous Session' : user.email) : 'Personalized Collection'}
-                  </p>
-                </div>
-              </div>
-              <div className="flex items-center gap-2">
-                {user && (
-                  <button 
-                    onClick={handleLogout}
-                    className="w-10 h-10 flex items-center justify-center bg-slate-50 dark:bg-slate-800 rounded-full text-slate-400 hover:text-red-500 transition-colors"
-                    title="Logout"
-                  >
-                    <LogOut size={18} />
-                  </button>
-                )}
-                <button 
-                  onClick={onClose}
-                  className="w-10 h-10 flex items-center justify-center bg-slate-50 dark:bg-slate-800 rounded-full text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors"
-                >
-                  <X size={20} />
-                </button>
-              </div>
+            {/* Minimal Header */}
+            <div className="absolute top-6 right-6 z-10">
+              <button 
+                onClick={onClose}
+                className="w-8 h-8 flex items-center justify-center rounded-full bg-slate-100 dark:bg-white/10 text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-white/20 transition-colors"
+              >
+                <X size={16} />
+              </button>
             </div>
 
-            {/* Content */}
             <div className="flex-1 overflow-y-auto p-8 no-scrollbar">
               {authMode !== 'profile' ? (
-                <div className="h-full flex flex-col justify-center">
-                  <div className="mb-8 text-center">
-                    <h3 className="text-xl font-serif font-bold text-slate-900 dark:text-white mb-2">
-                      {authMode === 'login' ? 'Welcome Back' : 'Join the Journey'}
+                <div className="min-h-full flex flex-col justify-center py-12">
+                  <div className="mb-10">
+                    <h3 className="text-2xl font-serif font-bold text-slate-900 dark:text-white mb-2">
+                      {authMode === 'login' ? 'Welcome Back' : 'Join Serenity'}
                     </h3>
-                    <p className="text-sm text-slate-400">
+                    <p className="text-sm text-slate-500 dark:text-slate-400 font-light">
                       {authMode === 'login' 
-                        ? 'Sign in to access your saved destinations.' 
-                        : 'Create an account to start your Maldivian collection.'}
+                        ? 'Access your curated collection of island escapes.' 
+                        : 'Begin your journey to the Maldives.'}
                     </p>
+                  </div>
+
+                  {/* Google Login */}
+                  <button
+                    onClick={handleGoogleLogin}
+                    disabled={loading}
+                    className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 text-slate-700 dark:text-slate-300 font-medium py-3.5 rounded-xl transition-all hover:bg-slate-50 dark:hover:bg-slate-800 flex items-center justify-center gap-3 mb-6"
+                  >
+                    <Chrome size={18} />
+                    <span>Continue with Google</span>
+                  </button>
+
+                  <div className="relative mb-6">
+                    <div className="absolute inset-0 flex items-center">
+                      <div className="w-full border-t border-slate-100 dark:border-white/5"></div>
+                    </div>
+                    <div className="relative flex justify-center text-xs uppercase tracking-widest">
+                      <span className="bg-white dark:bg-slate-950 px-2 text-slate-400">Or email</span>
+                    </div>
                   </div>
 
                   <form onSubmit={authMode === 'login' ? handleLogin : handleSignUp} className="space-y-4">
                     {authMode === 'signup' && (
-                      <div className="relative">
-                        <User className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+                      <div className="relative group">
+                        <User className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-sky-500 transition-colors" size={16} />
                         <input 
                           type="text" 
                           placeholder="Full Name"
                           value={fullName}
                           onChange={(e) => setFullName(e.target.value)}
                           required
-                          className="w-full bg-slate-50 dark:bg-slate-800 border-none rounded-2xl py-4 px-12 text-sm focus:ring-2 focus:ring-sky-500/20 transition-all"
+                          className="w-full bg-slate-50 dark:bg-slate-900 border-none rounded-xl py-3.5 pl-11 pr-4 text-sm focus:ring-1 focus:ring-sky-500 transition-all placeholder:text-slate-400"
                         />
                       </div>
                     )}
-                    <div className="relative">
-                      <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+                    <div className="relative group">
+                      <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-sky-500 transition-colors" size={16} />
                       <input 
                         type="email" 
                         placeholder="Email Address"
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
                         required
-                        className="w-full bg-slate-50 dark:bg-slate-800 border-none rounded-2xl py-4 px-12 text-sm focus:ring-2 focus:ring-sky-500/20 transition-all"
+                        className="w-full bg-slate-50 dark:bg-slate-900 border-none rounded-xl py-3.5 pl-11 pr-4 text-sm focus:ring-1 focus:ring-sky-500 transition-all placeholder:text-slate-400"
                       />
                     </div>
-                    <div className="relative">
-                      <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+                    <div className="relative group">
+                      <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-sky-500 transition-colors" size={16} />
                       <input 
                         type={showPassword ? "text" : "password"} 
                         placeholder="Password"
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
                         required
-                        className="w-full bg-slate-50 dark:bg-slate-800 border-none rounded-2xl py-4 px-12 text-sm focus:ring-2 focus:ring-sky-500/20 transition-all"
+                        className="w-full bg-slate-50 dark:bg-slate-900 border-none rounded-xl py-3.5 pl-11 pr-12 text-sm focus:ring-1 focus:ring-sky-500 transition-all placeholder:text-slate-400"
                       />
                       <button
                         type="button"
                         onClick={() => setShowPassword(!showPassword)}
-                        className="absolute right-4 top-1/2 -translate-y-1/2 text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-sky-500 transition-colors"
+                        className="absolute right-4 top-1/2 -translate-y-1/2 text-[10px] font-bold uppercase tracking-wider text-slate-400 hover:text-sky-500 transition-colors"
                       >
                         {showPassword ? 'Hide' : 'Show'}
                       </button>
                     </div>
 
                     {successMessage && (
-                      <div className="p-4 bg-emerald-50 dark:bg-emerald-900/20 rounded-xl border border-emerald-100 dark:border-emerald-900/30">
-                        <p className="text-[10px] font-bold text-emerald-600 text-center uppercase tracking-widest leading-relaxed">
-                          {successMessage}
-                        </p>
+                      <div className="p-3 bg-emerald-50 dark:bg-emerald-900/10 rounded-lg text-xs text-emerald-600 text-center">
+                        {successMessage}
                       </div>
                     )}
 
                     {error && (
-                      <div className="p-4 bg-red-50 dark:bg-red-900/20 rounded-xl border border-red-100 dark:border-red-900/30">
-                        <p className="text-[10px] font-bold text-red-500 text-center uppercase tracking-widest leading-relaxed">
-                          {error}
-                        </p>
+                      <div className="p-3 bg-red-50 dark:bg-red-900/10 rounded-lg text-xs text-red-500 text-center">
+                        {error}
                       </div>
                     )}
 
                     <button 
                       type="submit"
                       disabled={loading}
-                      className="w-full bg-sky-500 hover:bg-sky-600 text-white font-black uppercase tracking-[0.2em] py-4 rounded-2xl transition-all shadow-lg shadow-sky-500/20 flex items-center justify-center gap-2 disabled:opacity-50"
+                      className="w-full bg-slate-900 dark:bg-white hover:bg-slate-800 dark:hover:bg-slate-200 text-white dark:text-slate-900 font-bold uppercase tracking-widest text-xs py-4 rounded-xl transition-all shadow-lg shadow-slate-200 dark:shadow-none flex items-center justify-center gap-2 disabled:opacity-50 mt-2"
                     >
                       {loading ? (
-                        <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                        <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
                       ) : (
-                        <>
-                          {authMode === 'login' ? <LogIn size={18} /> : <UserPlus size={18} />}
-                          {authMode === 'login' ? 'Sign In' : 'Create Account'}
-                        </>
+                        authMode === 'login' ? 'Sign In' : 'Create Account'
                       )}
                     </button>
                   </form>
 
-                  <div className="mt-8 flex flex-col gap-4 text-center">
-                    <div className="flex items-center gap-4 my-2">
-                      <div className="h-[1px] flex-1 bg-slate-100 dark:bg-white/5" />
-                      <span className="text-[8px] font-black uppercase tracking-widest text-slate-300">Or</span>
-                      <div className="h-[1px] flex-1 bg-slate-100 dark:bg-white/5" />
-                    </div>
-
+                  <div className="mt-8 flex flex-col gap-3 text-center">
                     <button 
                       onClick={handleGuestLogin}
                       disabled={loading}
-                      className="w-full bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 font-black uppercase tracking-[0.2em] py-4 rounded-2xl transition-all flex items-center justify-center gap-2 border border-slate-100 dark:border-white/5"
+                      className="text-xs text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors"
                     >
-                      <User size={18} />
                       Continue as Guest
                     </button>
 
-                    {authMode === 'login' && (
+                    <div className="flex items-center justify-center gap-4 text-[10px] font-bold uppercase tracking-wider text-slate-400 mt-4">
                       <button 
-                        onClick={handleForgotPassword}
-                        className="text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-sky-500 transition-colors"
+                        onClick={() => setAuthMode(authMode === 'login' ? 'signup' : 'login')}
+                        className="hover:text-sky-500 transition-colors"
                       >
-                        Forgot Password?
+                        {authMode === 'login' ? "Create an account" : "Sign in instead"}
                       </button>
-                    )}
-                    <button 
-                      onClick={() => setAuthMode(authMode === 'login' ? 'signup' : 'login')}
-                      className="text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-sky-500 transition-colors"
-                    >
-                      {authMode === 'login' ? "Don't have an account? Sign Up" : "Already have an account? Sign In"}
-                    </button>
+                      {authMode === 'login' && (
+                        <>
+                          <span>•</span>
+                          <button 
+                            onClick={handleForgotPassword}
+                            className="hover:text-sky-500 transition-colors"
+                          >
+                            Forgot Password
+                          </button>
+                        </>
+                      )}
+                    </div>
                   </div>
                 </div>
               ) : (
-                <>
+                <div className="pt-12 pb-8">
+                  {/* Profile Header */}
+                  <div className="flex items-center gap-4 mb-8">
+                    <div className="w-16 h-16 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-400 text-xl font-bold">
+                      {user?.user_metadata?.full_name?.[0] || user?.email?.[0]?.toUpperCase() || <User />}
+                    </div>
+                    <div>
+                      <h2 className="text-lg font-bold text-slate-900 dark:text-white">
+                        {user?.is_anonymous ? 'Guest Explorer' : (user?.user_metadata?.full_name || 'Explorer')}
+                      </h2>
+                      <p className="text-xs text-slate-500 dark:text-slate-400">
+                        {user?.is_anonymous ? 'Anonymous Session' : user?.email}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Member Benefits */}
+                  {!user?.is_anonymous && (
+                    <div className="mb-10 bg-gradient-to-br from-slate-900 to-slate-800 dark:from-white dark:to-slate-200 rounded-2xl p-6 text-white dark:text-slate-900 shadow-xl">
+                      <div className="flex items-center justify-between mb-4">
+                        <div className="flex items-center gap-2">
+                          <Star className="text-yellow-400 dark:text-yellow-600" size={16} fill="currentColor" />
+                          <span className="text-xs font-black uppercase tracking-widest">{memberStatus} Member</span>
+                        </div>
+                        <span className="text-xs font-bold opacity-80">Points: 0</span>
+                      </div>
+                      <div className="space-y-3">
+                        <div className="flex items-center gap-3 text-sm font-medium opacity-90">
+                          <Gift size={16} />
+                          <span>{(memberDiscount * 100).toFixed(0)}% Member Discount Applied</span>
+                        </div>
+                        <div className="flex items-center gap-3 text-sm font-medium opacity-90">
+                          <Shield size={16} />
+                          <span>Best Price Guarantee</span>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
                   {/* Liked Destinations */}
-              <section className="mb-12">
-                <div className="flex items-center gap-3 mb-8">
-                  <Heart size={16} className="text-red-500" fill="currentColor" />
-                  <h3 className="text-[10px] font-black uppercase tracking-[0.4em] text-slate-900 dark:text-white">Liked Destinations</h3>
-                </div>
+                  <section className="mb-10">
+                    <div className="flex items-center justify-between mb-6">
+                      <h3 className="text-xs font-black uppercase tracking-widest text-slate-900 dark:text-white flex items-center gap-2">
+                        <Heart size={14} /> Liked
+                      </h3>
+                      <span className="text-[10px] font-bold text-slate-400">{likedResorts.length} items</span>
+                    </div>
 
-                {likedResorts.length === 0 ? (
-                  <div className="p-12 text-center bg-slate-50 dark:bg-slate-800/50 rounded-[2rem]">
-                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-loose">
-                      You haven't liked any destinations yet.
-                    </p>
-                  </div>
-                ) : (
-                  <div className="grid grid-cols-1 gap-4">
-                    {likedResorts.map((resort) => (
-                      <div key={resort.id} className="group relative aspect-[16/9] rounded-[1.5rem] overflow-hidden">
-                        <img 
-                          src={resort.image && resort.image.length > 10 ? resort.image : 'https://images.unsplash.com/photo-1544550581-5f7ceaf7f992?auto=format&fit=crop&q=80&w=1200'} 
-                          alt={resort.name} 
-                          className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" 
-                        />
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
-                        <div className="absolute bottom-6 left-6 right-6 flex justify-between items-end">
-                          <div>
-                            <span className="text-[8px] font-black text-sky-400 uppercase tracking-widest block mb-1">
-                              {resort.type?.replace('_', ' ') || 'Resort'} • {resort.atoll}
-                            </span>
-                            <h4 className="text-sm font-serif font-bold text-white">{resort.name}</h4>
+                    {likedResorts.length === 0 ? (
+                      <div className="py-8 text-center border border-dashed border-slate-200 dark:border-white/10 rounded-xl">
+                        <p className="text-xs text-slate-400">No favorites yet.</p>
+                      </div>
+                    ) : (
+                      <div className="space-y-3">
+                        {likedResorts.map((resort) => (
+                          <div key={resort.id} className="group flex gap-3 p-2 hover:bg-slate-50 dark:hover:bg-white/5 rounded-xl transition-colors">
+                            <div className="w-16 h-12 rounded-lg overflow-hidden flex-shrink-0">
+                              <img 
+                                src={resort.image || 'https://images.unsplash.com/photo-1544550581-5f7ceaf7f992?auto=format&fit=crop&q=80&w=1200'} 
+                                alt={resort.name} 
+                                className="w-full h-full object-cover" 
+                              />
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <h4 className="text-sm font-bold text-slate-900 dark:text-white truncate">{resort.name}</h4>
+                              <p className="text-[10px] text-slate-500 uppercase tracking-wider">{resort.atoll}</p>
+                            </div>
+                            <button 
+                              onClick={() => toggleLike(resort)}
+                              className="w-8 h-8 flex items-center justify-center text-slate-300 hover:text-red-500 transition-colors"
+                            >
+                              <Trash2 size={14} />
+                            </button>
                           </div>
-                          <button 
-                            onClick={() => toggleLike(resort)}
-                            className="w-8 h-8 rounded-full bg-white/10 backdrop-blur-md flex items-center justify-center text-white hover:bg-red-500 transition-colors"
-                          >
-                            <Trash2 size={14} />
-                          </button>
-                        </div>
+                        ))}
                       </div>
-                    ))}
-                  </div>
-                )}
-              </section>
+                    )}
+                  </section>
 
-              {/* Bucket Items */}
-              <section>
-                <div className="flex items-center gap-3 mb-8">
-                  <ShoppingBag size={16} className="text-sky-500" />
-                  <h3 className="text-[10px] font-black uppercase tracking-[0.4em] text-slate-900 dark:text-white">In Your Bucket</h3>
+                  {/* Bucket Items */}
+                  <section className="mb-10">
+                    <div className="flex items-center justify-between mb-6">
+                      <h3 className="text-xs font-black uppercase tracking-widest text-slate-900 dark:text-white flex items-center gap-2">
+                        <ShoppingBag size={14} /> Bucket
+                      </h3>
+                      <span className="text-[10px] font-bold text-slate-400">{items.length} items</span>
+                    </div>
+
+                    {items.length === 0 ? (
+                      <div className="py-8 text-center border border-dashed border-slate-200 dark:border-white/10 rounded-xl">
+                        <p className="text-xs text-slate-400">Your bucket is empty.</p>
+                      </div>
+                    ) : (
+                      <div className="space-y-3">
+                        {items.map((item) => (
+                          <div key={item.id} className="group flex gap-3 p-2 hover:bg-slate-50 dark:hover:bg-white/5 rounded-xl transition-colors">
+                            <div className="w-16 h-12 rounded-lg overflow-hidden flex-shrink-0">
+                              <img 
+                                src={item.image || 'https://images.unsplash.com/photo-1544550581-5f7ceaf7f992?auto=format&fit=crop&q=80&w=1200'} 
+                                alt={item.name} 
+                                className="w-full h-full object-cover" 
+                              />
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <h4 className="text-sm font-bold text-slate-900 dark:text-white truncate">{item.name}</h4>
+                              <p className="text-[10px] text-slate-500 uppercase tracking-wider">{item.type.replace('_', ' ')}</p>
+                            </div>
+                            <button 
+                              onClick={() => removeItem(item.id)}
+                              className="w-8 h-8 flex items-center justify-center text-slate-300 hover:text-red-500 transition-colors"
+                            >
+                              <Trash2 size={14} />
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </section>
+
+                  <button 
+                    onClick={handleLogout}
+                    className="w-full py-4 flex items-center justify-center gap-2 text-xs font-bold uppercase tracking-widest text-slate-400 hover:text-red-500 transition-colors border-t border-slate-100 dark:border-white/5"
+                  >
+                    <LogOut size={14} />
+                    Sign Out
+                  </button>
                 </div>
-
-                {items.length === 0 ? (
-                  <div className="p-12 text-center bg-slate-50 dark:bg-slate-800/50 rounded-[2rem]">
-                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-loose">
-                      Your bucket is empty.
-                    </p>
-                  </div>
-                ) : (
-                  <div className="space-y-4">
-                    {items.map((item) => (
-                      <div key={item.id} className="flex items-center gap-4 p-4 bg-slate-50 dark:bg-slate-800 rounded-2xl">
-                        <div className="w-16 h-16 rounded-xl overflow-hidden flex-shrink-0">
-                          <img 
-                            src={item.image && item.image.length > 10 ? item.image : 'https://images.unsplash.com/photo-1544550581-5f7ceaf7f992?auto=format&fit=crop&q=80&w=1200'} 
-                            alt={item.name} 
-                            className="w-full h-full object-cover" 
-                          />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <span className="text-[8px] font-black text-sky-500 uppercase tracking-widest block mb-1">
-                            {item.type.replace('_', ' ')}
-                          </span>
-                          <h4 className="text-sm font-serif font-bold text-slate-900 dark:text-white truncate">{item.name}</h4>
-                        </div>
-                        <button 
-                          onClick={() => removeItem(item.id)}
-                          className="p-2 text-slate-300 hover:text-red-500 transition-colors"
-                        >
-                          <Trash2 size={16} />
-                        </button>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </section>
-                </>
               )}
             </div>
           </motion.div>

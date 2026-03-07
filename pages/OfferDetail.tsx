@@ -216,7 +216,8 @@ const OfferDetail: React.FC = () => {
                         image: offer.image,
                         slug: offer.resortSlug,
                         price: offer.price,
-                        details: offer.resortName
+                        details: offer.resortName,
+                        resortId: offer.resortId
                       });
                     }
                   }}
