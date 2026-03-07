@@ -1,0 +1,303 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Maldives Serenity Travels | Luxury Maldives Resorts & Bespoke Island Escapes</title>
+    <meta name="description" content="Expertly curated luxury travel in the Maldives. Discover the best overwater villas, private island resorts, and all-inclusive honeymoon packages. Local specialists in Addu City and the Southern Atolls.">
+    <meta name="keywords" content="Maldives luxury resorts, best overwater villas Maldives, Maldives honeymoon packages, private island resorts Maldives, Maldives travel agency, Addu City travel, Southern atolls Maldives, Maldives vacation planning, luxury beach villas Maldives, all-inclusive Maldives resorts, Maldives diving holidays, Maldives family resorts, luxury travel Maldives, bespoke Maldives itineraries">
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:title" content="Maldives Serenity Travels | Luxury Maldives Resorts & Bespoke Island Escapes">
+    <meta property="og:description" content="Expertly curated luxury travel in the Maldives. Discover the best overwater villas, private island resorts, and all-inclusive honeymoon packages.">
+    <meta property="og:url" content="https://maldives-serenitytravels.com">
+    <meta property="og:image" content="https://maldives-serenitytravels.com/images/hero-image-11.png">
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="Maldives Serenity Travels">
+    
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Maldives Serenity Travels | Bespoke Luxury Island Escapes">
+    <meta name="twitter:description" content="Curated luxury travel experiences in the Maldives. Discover private island resorts, overwater villas, and bespoke holiday planning with our local experts.">
+    <meta name="twitter:image" content="https://maldives-serenitytravels.com/images/hero-image-11.png">
+    
+    <link rel="canonical" href="https://maldives-serenitytravels.com">
+    <base href="/">
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        darkMode: 'class',
+        theme: {
+          extend: {
+            fontFamily: {
+              sans: ['"Gill Sans"', '"Gill Sans MT"', 'Calibri', 'sans-serif'],
+              serif: ['"Cormorant Garamond"', 'serif'],
+            },
+            colors: {
+              parchment: '#f9f7f2',
+              charcoal: '#1d1c1a',
+              claude: '#d97757',
+              sky: {
+                50: '#fdf4f2',
+                100: '#fbe9e5',
+                200: '#f7d3cb',
+                300: '#f3bda1',
+                400: '#ef9a77',
+                500: '#d97757',
+                600: '#c26a4e',
+                700: '#a15841',
+                800: '#814634',
+                900: '#613527',
+                950: '#40231a',
+              },
+              slate: {
+                50: '#f9f7f2',
+                100: '#e6e1d6',
+                200: '#d1ccc0',
+                300: '#b3ada0',
+                400: '#948e7f',
+                500: '#756f60',
+                600: '#5c574b',
+                700: '#423f36',
+                800: '#292722',
+                900: '#1d1c1a',
+                950: '#141311',
+              },
+              amber: {
+                50: '#fdfbf7',
+                100: '#f7f2e6',
+                200: '#ede4cc',
+                300: '#e1d2a9',
+                400: '#d3bc83',
+                500: '#c9bfa9',
+                600: '#b3a68d',
+                700: '#91846e',
+                800: '#706554',
+                900: '#4f473b',
+                950: '#2e2a22',
+              },
+              rose: {
+                50: '#fdf8f7',
+                500: '#d9a7a7',
+              },
+              emerald: {
+                50: '#f7fdf9',
+                500: '#a7d9c0',
+              }
+            }
+          }
+        }
+      }
+    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600;700&family=Libre+Baskerville:wght@400;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --bg-parchment: #f5f2ed;
+            --text-charcoal: #1a1a1a;
+            --atoll-blue: #d97706; /* Amber-600 */
+            --font-main: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            --font-serif: "Cormorant Garamond", serif;
+        }
+
+        body { 
+            font-family: var(--font-main); 
+            background-color: var(--bg-parchment);
+            color: var(--text-charcoal);
+            -webkit-font-smoothing: antialiased;
+            overflow-x: hidden;
+            scroll-behavior: smooth;
+            transition: background-color 0.7s cubic-bezier(0.16, 1, 0.3, 1), color 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .font-serif { font-family: var(--font-serif); font-style: normal !important; }
+
+        /* Refine font weights - tone down "too bold" instances */
+        .font-black { font-weight: 700 !important; }
+        .font-bold { font-weight: 600 !important; }
+        .font-semibold { font-weight: 500 !important; }
+
+        /* Disable italics globally if requested */
+        * { font-style: normal !important; }
+
+        /* Reveal Animation System */
+        .reveal { 
+            opacity: 0; 
+            transform: translateY(40px); 
+            transition: all 1.2s cubic-bezier(0.16, 1, 0.3, 1); 
+        }
+        .reveal.active { 
+            opacity: 1; 
+            transform: translateY(0); 
+        }
+
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+        /* SEO Shadow Nav - Visually hidden but fully readable by bots and generators */
+        .crawler-shell {
+            position: absolute;
+            left: -10000px;
+            top: auto;
+            width: 1px;
+            height: 1px;
+            overflow: hidden;
+        }
+
+        /* Sophisticated Scrollbar */
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-track { background: var(--bg-parchment); }
+        ::-webkit-scrollbar-thumb { background: #e6e1d6; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--atoll-blue); }
+
+        .glass-nav {
+            background: rgba(249, 247, 242, 0.85);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+        }
+        
+        .dark .glass-nav {
+            background: rgba(29, 28, 26, 0.85);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .img-editorial {
+            overflow: hidden;
+            position: relative;
+        }
+        .img-editorial img {
+            transition: transform 2.5s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .img-editorial:hover img {
+            transform: scale(1.08);
+        }
+
+        /* Luxury Inputs */
+        input, select, textarea {
+            font-family: var(--font-main);
+        }
+
+        ::selection {
+            background: rgba(14, 165, 233, 0.15);
+            color: var(--atoll-blue);
+        }
+        
+        .letter-spacing-vogue {
+            letter-spacing: 0.4em;
+        }
+
+        @keyframes scroll-line {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+        .animate-scroll-line {
+            animation: scroll-line 2s infinite linear;
+        }
+
+        @keyframes marquee {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-50%); }
+        }
+        .animate-marquee {
+            animation: marquee 30s linear infinite;
+        }
+        .animate-marquee-reverse {
+            animation: marquee 30s linear infinite reverse;
+        }
+    </style>
+
+    <script type="importmap">
+{
+  "imports": {
+    "react": "https://esm.sh/react@19.0.0",
+    "react-dom": "https://esm.sh/react-dom@19.0.0",
+    "react-dom/client": "https://esm.sh/react-dom@19.0.0/client",
+    "react-router-dom": "https://esm.sh/react-router-dom@7.1.5?deps=react@19.0.0,react-dom@19.0.0",
+    "react/": "https://esm.sh/react@^19.2.3/",
+    "react-dom/": "https://esm.sh/react-dom@^19.2.3/",
+    "next/": "https://esm.sh/next@^16.1.4/",
+    "@supabase/supabase-js": "https://esm.sh/@supabase/supabase-js@2.39.7",
+    "@google/genai": "https://esm.sh/@google/genai@^1.38.0"
+  }
+}
+</script>
+<link rel="stylesheet" href="/index.css">
+</head>
+<body class="dark:bg-slate-950 dark:text-slate-200">
+    <div class="crawler-shell">
+        <header>
+            <h1>Maldives Serenity Travels | Bespoke Luxury Island Escapes</h1>
+            <p>Curated luxury travel experiences in the Maldives. Discover private island resorts, overwater villas, and bespoke holiday planning with our local experts.</p>
+        </header>
+
+        <nav aria-label="Primary Navigation">
+            <ul>
+                <li><a href="/">Home - Bespoke Maldives Travel Agency</a></li>
+                <li><a href="/stays">Luxury Resorts & Overwater Villas Portfolio</a></li>
+                <li><a href="/offers">Exclusive Maldives Holiday Offers & Packages</a></li>
+                <li><a href="/experiences">Curated Maldives Experiences & Private Tours</a></li>
+                <li><a href="/stories">The Serenity Journal - Maldivian Travel Insights</a></li>
+                <li><a href="/plan">Bespoke Holiday Planning & Custom Itineraries</a></li>
+                <li><a href="/about">Our Heritage & Philosophy</a></li>
+                <li><a href="/contact">Contact Our Private Concierge</a></li>
+            </ul>
+        </nav>
+
+        <section id="philosophy">
+            <h2>Our Heritage & Philosophy</h2>
+            <p>Maldives Serenity Travels is your dedicated specialist for curated luxury resort experiences and bespoke island escapes in the Maldives. Born from a deep-rooted love for the Maldivian archipelago, we bridge the gap between local intimacy and global luxury standards.</p>
+            <p>Our mission is to provide discerning travelers with a seamless and deeply personalized journey, ensuring every stay is a masterpiece of comfort, privacy, and authentic island hospitality. Based in Addu City, we operate at the southern frontier of the archipelago, prioritizing privacy, heritage, and untouched beauty.</p>
+            <h3>What Makes Us Different</h3>
+            <ul>
+                <li><strong>Maldives Specialists:</strong> Local experts with intimate knowledge of every atoll.</li>
+                <li><strong>Direct Resort Partnerships:</strong> Exclusive privileges and competitive rates through direct relationships.</li>
+                <li><strong>Data-Driven Planning:</strong> Leveraging industry insights for perfect timing and destinations.</li>
+                <li><strong>Tailor-Made Experiences:</strong> Meticulously crafted itineraries aligned with your personal definition of luxury.</li>
+            </ul>
+        </section>
+
+        <section id="featured-resorts">
+            <h2>Featured Luxury Collection</h2>
+            <article>
+                <h3>Soneva Jani</h3>
+                <p>Located in Noonu Atoll. Known for overwater villas with retractable roofs and private slides into the lagoon.</p>
+            </article>
+            <article>
+                <h3>Gili Lankanfushi</h3>
+                <p>Located in North Malé Atoll. An eco-luxury resort featuring the world's largest standalone overwater villa.</p>
+            </article>
+            <article>
+                <h3>Joali Maldives</h3>
+                <p>Located in Raa Atoll. An immersive art resort offering sustainable luxury and exquisite design.</p>
+            </article>
+            <article>
+                <h3>Waldorf Astoria Ithaafushi</h3>
+                <p>Located in South Malé Atoll. Spanning three islands with world-class dining and private reef access.</p>
+            </article>
+        </section>
+
+        <section id="experiences">
+            <h2>Curated Maldivian Experiences</h2>
+            <ul>
+                <li>Private Sandbank Picnics</li>
+                <li>Manta Ray Snorkeling in Hanifaru Bay</li>
+                <li>Traditional Dhoni Sunset Cruises</li>
+                <li>Underwater Fine Dining</li>
+                <li>Bespoke Wellness & Spa Retreats</li>
+            </ul>
+        </section>
+
+        <footer>
+            <p>© 2026 Maldives Serenity Travels. Registered in the Republic of Maldives. Licensed by the Ministry of Tourism.</p>
+            <address>
+                Faith, S.feydhoo, Addu City, 19040, Maldives
+            </address>
+        </footer>
+    </div>
+
+    <div id="root"></div>
+    <script type="module" src="/index.tsx"></script>
+</body>
+</html>
