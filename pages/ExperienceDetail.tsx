@@ -183,7 +183,8 @@ const ExperienceDetail: React.FC = () => {
                         name: experience.title,
                         image: experience.image,
                         slug: experience.slug,
-                        details: experience.category
+                        details: experience.category,
+                        resortId: experience.resortId
                       });
                     }
                   }}

@@ -40,6 +40,8 @@ import { BagProvider, useBag } from './context/BagContext.tsx';
 import DiscoveryFeed from './components/DiscoveryFeed.tsx';
 import UserPanel from './components/UserPanel.tsx';
 
+import AuthCallback from './pages/AuthCallback.tsx';
+
 const ScrollToTopOnRoute = () => {
   const { pathname } = useLocation();
   React.useEffect(() => {
@@ -80,6 +82,7 @@ const AppContent: React.FC = () => {
         <Route path="/admin/stories" element={<AdminStories />} />
         <Route path="/admin/faqs" element={<AdminFAQ />} />
         <Route path="/discovery" element={<DiscoveryFeed />} />
+        <Route path="/auth/callback" element={<AuthCallback />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
       {!isDiscoveryMode && (

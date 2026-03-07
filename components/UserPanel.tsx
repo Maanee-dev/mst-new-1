@@ -54,13 +54,42 @@ const UserPanel: React.FC = () => {
     setLoading(true);
     setError(null);
     try {
-      const { error } = await supabase.auth.signInWithOAuth({
+      // Use popup flow for better compatibility with iframes/previews
+      const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: `${window.location.origin}`,
+          redirectTo: `${window.location.origin}/auth/callback`,
+          skipBrowserRedirect: true,
         },
       });
       if (error) throw error;
+
+      if (data?.url) {
+        const width = 500;
+        const height = 600;
+        const left = window.screen.width / 2 - width / 2;
+        const top = window.screen.height / 2 - height / 2;
+        
+        window.open(
+          data.url,
+          'Supabase Auth',
+          `width=${width},height=${height},left=${left},top=${top}`
+        );
+
+        // Listen for messages from the popup
+        const handleMessage = (event: MessageEvent) => {
+          if (event.data?.type === 'OAUTH_SUCCESS') {
+            // Session is handled by onAuthStateChange in BagContext
+            onClose();
+            window.removeEventListener('message', handleMessage);
+          } else if (event.data?.type === 'OAUTH_ERROR') {
+            setError(event.data.error || 'Authentication failed');
+            setLoading(false);
+            window.removeEventListener('message', handleMessage);
+          }
+        };
+        window.addEventListener('message', handleMessage);
+      }
     } catch (err: any) {
       setError(err.message);
       setLoading(false);

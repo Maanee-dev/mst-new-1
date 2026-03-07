@@ -150,8 +150,8 @@ export const BagProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       return [...prev, item];
     });
 
-    // If adding an offer, also add the associated resort
-    if (item.type === 'offer' && item.resortId) {
+    // If adding an offer or experience, also add the associated resort
+    if ((item.type === 'offer' || item.type === 'experience') && item.resortId) {
       try {
         // Check if resort is already in bag (using current state, might miss race conditions but okay for UI)
         // We use a functional update to be safe

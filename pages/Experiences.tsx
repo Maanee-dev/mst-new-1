@@ -220,7 +220,8 @@ const Experiences: React.FC = () => {
                                name: exp.title,
                                image: exp.image,
                                slug: exp.slug,
-                               details: exp.category
+                               details: exp.category,
+                               resortId: exp.resortId
                              });
                            }}
                            className={`w-10 h-10 rounded-full flex items-center justify-center transition-all duration-500 ${isInBag(exp.id) ? 'bg-sky-500 text-white shadow-lg' : 'bg-white/95 dark:bg-slate-900/95 text-slate-900 dark:text-white hover:bg-sky-500 hover:text-white'}`}
