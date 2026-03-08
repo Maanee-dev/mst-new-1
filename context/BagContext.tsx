@@ -168,9 +168,7 @@ export const BagProvider: React.FC<{ children: React.ReactNode }> = ({ children 
               image: resort.images[0],
               slug: resort.slug,
               atoll: resort.atoll,
-              price: resort.priceRange,
-              startDate: item.startDate,
-              endDate: item.endDate
+              price: resort.priceRange
             } as BagItem];
           });
         }
@@ -201,9 +199,7 @@ export const BagProvider: React.FC<{ children: React.ReactNode }> = ({ children 
                 slug: offer.resortSlug,
                 price: offer.price,
                 details: offer.resortName,
-                resortId: offer.resortId,
-                startDate: startDate.toISOString().split('T')[0],
-                endDate: endDate.toISOString().split('T')[0]
+                resortId: offer.resortId
               });
             }
           }

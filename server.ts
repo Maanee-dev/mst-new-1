@@ -3,46 +3,11 @@ import cors from 'cors';
 import cookieSession from 'cookie-session';
 import path from 'path';
 import fs from 'fs';
-import axios from 'axios';
 import { fileURLToPath } from 'url';
 import { createServer as createViteServer } from 'vite';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-
-// Amadeus API Helper
-let amadeusToken: string | null = null;
-let amadeusTokenExpiry: number = 0;
-
-async function getAmadeusToken() {
-  if (amadeusToken && Date.now() < amadeusTokenExpiry) {
-    return amadeusToken;
-  }
-
-  const clientId = process.env.AMADEUS_CLIENT_ID;
-  const clientSecret = process.env.AMADEUS_CLIENT_SECRET;
-
-  if (!clientId || !clientSecret) {
-    console.error('[Amadeus] Missing credentials. AMADEUS_CLIENT_ID or AMADEUS_CLIENT_SECRET not set.');
-    throw new Error('Amadeus credentials not configured');
-  }
-
-  console.log(`[Amadeus] Fetching token with ID: ${clientId.substring(0, 4)}...`);
-
-  const response = await axios.post(
-    'https://test.api.amadeus.com/v1/security/oauth2/token',
-    new URLSearchParams({
-      grant_type: 'client_credentials',
-      client_id: clientId,
-      client_secret: clientSecret,
-    }),
-    { headers: { 'Content-Type': 'application/x-www-form-urlencoded' } }
-  );
-
-  amadeusToken = response.data.access_token;
-  amadeusTokenExpiry = Date.now() + response.data.expires_in * 1000;
-  return amadeusToken;
-}
 
 async function startServer() {
   try {
@@ -57,16 +22,6 @@ async function startServer() {
     res.send('OK');
   });
 
-  app.get('/api/debug', (req, res) => {
-    res.json({
-      status: 'online',
-      nodeEnv: process.env.NODE_ENV || 'development',
-      amadeusConfigured: !!(process.env.AMADEUS_CLIENT_ID && process.env.AMADEUS_CLIENT_SECRET),
-      amadeusClientIdPrefix: process.env.AMADEUS_CLIENT_ID ? process.env.AMADEUS_CLIENT_ID.substring(0, 4) : 'none',
-      timestamp: new Date().toISOString()
-    });
-  });
-
   app.use(cookieSession({
     name: 'session',
     keys: [process.env.SESSION_SECRET || 'serenity-secret'],
@@ -75,78 +30,6 @@ async function startServer() {
     sameSite: 'none',
     httpOnly: true,
   }));
-
-  // API Request Logger
-  app.use((req, res, next) => {
-    if (req.path.startsWith('/api')) {
-      console.log(`[API] ${req.method} ${req.path}`);
-    }
-    next();
-  });
-
-  // Flight Search Route (Amadeus)
-  app.get('/api/flights/search', async (req, res) => {
-    const { origin, destination, departureDate, returnDate, adults } = req.query;
-    
-    if (!origin || !destination || !departureDate) {
-      return res.status(400).json({ error: 'origin, destination, and departureDate are required' });
-    }
-
-    try {
-      const token = await getAmadeusToken();
-      
-      // Amadeus Flight Offers Search v2
-      const params = new URLSearchParams({
-        originLocationCode: origin as string,
-        destinationLocationCode: destination as string,
-        departureDate: departureDate as string,
-        adults: (adults as string) || '1',
-        currencyCode: 'USD',
-        max: '10'
-      });
-
-      if (returnDate) {
-        params.append('returnDate', returnDate as string);
-      }
-
-      const flightsResponse = await axios.get(
-        `https://test.api.amadeus.com/v2/shopping/flight-offers?${params.toString()}`,
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-
-      res.json(flightsResponse.data);
-    } catch (error: any) {
-      const errorData = error.response?.data;
-      const errorMessage = errorData?.errors?.[0]?.detail || errorData?.message || error.message;
-      console.error('Flight API Error:', errorData || error.message);
-      res.status(500).json({ 
-        error: 'Failed to fetch live flight offers', 
-        details: errorMessage 
-      });
-    }
-  });
-
-  // IATA City/Airport Search
-  app.get('/api/flights/locations', async (req, res) => {
-    const { keyword } = req.query;
-    if (!keyword) return res.json([]);
-
-    try {
-      const token = await getAmadeusToken();
-      const response = await axios.get(
-        `https://test.api.amadeus.com/v1/reference-data/locations?subType=CITY,AIRPORT&keyword=${keyword}`,
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-      res.json(response.data.data);
-    } catch (error: any) {
-      res.status(500).json({ error: 'Failed to fetch locations' });
-    }
-  });
-
-  // 404 for unmatched API routes
-  app.use('/api', (req, res) => {
-    res.status(404).json({ error: 'API route not found' });
-  });
 
   app.get('/robots.txt', (req, res) => {
     const filePath = process.env.NODE_ENV === 'production' 
@@ -172,7 +55,8 @@ async function startServer() {
 
       app.get('*', async (req, res, next) => {
         const url = req.originalUrl;
-        
+        console.log(`Handling request for: ${url}`);
+
         // Skip API and Auth routes
         if (url.startsWith('/api') || url.startsWith('/auth') || url.startsWith('/health')) {
           return next();
@@ -197,12 +81,7 @@ async function startServer() {
       });
     } else {
       app.use(express.static(path.join(__dirname, 'dist')));
-      
-      // Handle SPA fallback but EXCLUDE API routes
-      app.get('*', (req, res, next) => {
-        if (req.path.startsWith('/api') || req.path.startsWith('/auth') || req.path.startsWith('/health')) {
-          return next();
-        }
+      app.get('*', (req, res) => {
         res.sendFile(path.join(__dirname, 'dist', 'index.html'));
       });
     }

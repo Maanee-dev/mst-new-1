@@ -99,7 +99,7 @@ export interface Experience {
   }[];
 }
 
-export type BagItemType = 'resort' | 'experience' | 'offer' | 'guest_house' | 'liveaboard' | 'flight';
+export type BagItemType = 'resort' | 'experience' | 'offer' | 'guest_house' | 'liveaboard';
 
 export interface BagItem {
   id: string;
@@ -111,8 +111,6 @@ export interface BagItem {
   price?: number | string;
   details?: string;
   resortId?: string;
-  startDate?: string;
-  endDate?: string;
 }
 
 export type StoryCategory = 'Dispatch' | 'Guide' | 'Update' | 'Tip';
