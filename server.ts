@@ -47,17 +47,20 @@ async function getAmadeusToken() {
 async function startServer() {
   try {
     console.log('Initializing server...');
-    const app = express();
-    const PORT = 3000;
+  const app = express();
+  const PORT = 3000;
 
   app.use(cors());
   app.use(express.json());
   
-  app.get('/health', (req, res) => {
+  // API Router
+  const apiRouter = express.Router();
+
+  apiRouter.get('/health', (req, res) => {
     res.send('OK');
   });
 
-  app.get('/api/debug', (req, res) => {
+  apiRouter.get('/debug', (req, res) => {
     res.json({
       status: 'online',
       nodeEnv: process.env.NODE_ENV || 'development',
@@ -67,25 +70,14 @@ async function startServer() {
     });
   });
 
-  app.use(cookieSession({
-    name: 'session',
-    keys: [process.env.SESSION_SECRET || 'serenity-secret'],
-    maxAge: 24 * 60 * 60 * 1000, // 24 hours
-    secure: true,
-    sameSite: 'none',
-    httpOnly: true,
-  }));
-
   // API Request Logger
-  app.use((req, res, next) => {
-    if (req.path.startsWith('/api')) {
-      console.log(`[API] ${req.method} ${req.path}`);
-    }
+  apiRouter.use((req, res, next) => {
+    console.log(`[API] ${req.method} ${req.path}`);
     next();
   });
 
   // Flight Search Route (Amadeus)
-  app.get('/api/flights/search', async (req, res) => {
+  apiRouter.get('/flights/search', async (req, res) => {
     const { origin, destination, departureDate, returnDate, adults } = req.query;
     
     if (!origin || !destination || !departureDate) {
@@ -95,7 +87,6 @@ async function startServer() {
     try {
       const token = await getAmadeusToken();
       
-      // Amadeus Flight Offers Search v2
       const params = new URLSearchParams({
         originLocationCode: origin as string,
         destinationLocationCode: destination as string,
@@ -127,7 +118,7 @@ async function startServer() {
   });
 
   // Hotel Search Route (Amadeus)
-  app.get('/api/hotels/search', async (req, res) => {
+  apiRouter.get('/hotels/search', async (req, res) => {
     const { cityCode, checkInDate, checkOutDate, adults } = req.query;
     
     if (!cityCode) {
@@ -137,7 +128,6 @@ async function startServer() {
     try {
       const token = await getAmadeusToken();
       
-      // 1. Get list of hotels in the city
       const hotelsListResponse = await axios.get(
         `https://test.api.amadeus.com/v1/reference-data/locations/hotels/by-city?cityCode=${cityCode}&radius=50&radiusUnit=KM&hotelSource=ALL`,
         { headers: { Authorization: `Bearer ${token}` } }
@@ -149,7 +139,6 @@ async function startServer() {
         return res.json({ data: [] });
       }
 
-      // 2. Get offers for those hotels
       const params = new URLSearchParams({
         hotelIds,
         adults: (adults as string) || '1',
@@ -173,11 +162,10 @@ async function startServer() {
   });
 
   // Activities Search Route (Amadeus)
-  app.get('/api/activities/search', async (req, res) => {
+  apiRouter.get('/activities/search', async (req, res) => {
     const { latitude, longitude } = req.query;
     
     if (!latitude || !longitude) {
-      // Default to Male, Maldives if not provided
       return res.status(400).json({ error: 'latitude and longitude are required' });
     }
 
@@ -198,7 +186,7 @@ async function startServer() {
   });
 
   // Email Confirmation Route
-  app.post('/api/itinerary/confirm', async (req, res) => {
+  apiRouter.post('/itinerary/confirm', async (req, res) => {
     const { email, name, itinerary } = req.body;
     
     if (!email || !itinerary) {
@@ -207,10 +195,6 @@ async function startServer() {
 
     try {
       console.log(`[Email] Sending itinerary to ${email} for ${name}`);
-      // In a real production app, use SendGrid, Mailgun, or AWS SES here.
-      // For this demo, we'll simulate a successful send.
-      
-      // Simulate delay
       await new Promise(resolve => setTimeout(resolve, 1500));
 
       res.json({ 
@@ -224,7 +208,7 @@ async function startServer() {
   });
 
   // IATA City/Airport Search
-  app.get('/api/flights/locations', async (req, res) => {
+  apiRouter.get('/flights/locations', async (req, res) => {
     const { keyword } = req.query;
     if (!keyword) return res.json([]);
 
@@ -240,10 +224,22 @@ async function startServer() {
     }
   });
 
-  // 404 for unmatched API routes
+  // Mount API Router
+  app.use('/api', apiRouter);
+
+  // 404 for unmatched API routes (must be after apiRouter)
   app.use('/api', (req, res) => {
     res.status(404).json({ error: 'API route not found' });
   });
+
+  app.use(cookieSession({
+    name: 'session',
+    keys: [process.env.SESSION_SECRET || 'serenity-secret'],
+    maxAge: 24 * 60 * 60 * 1000, // 24 hours
+    secure: true,
+    sameSite: 'none',
+    httpOnly: true,
+  }));
 
   app.get('/robots.txt', (req, res) => {
     const filePath = process.env.NODE_ENV === 'production' 

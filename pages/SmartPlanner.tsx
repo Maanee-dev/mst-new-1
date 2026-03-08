@@ -71,6 +71,7 @@ const SmartPlanner: React.FC = () => {
     const delayDebounceFn = setTimeout(async () => {
       try {
         const res = await fetch(`/api/flights/locations?keyword=${searchCriteria.origin}`);
+        if (!res.ok) throw new Error('Failed to fetch locations');
         const data = await res.json();
         setLocationSuggestions(data);
       } catch (err) {
@@ -90,17 +91,28 @@ const SmartPlanner: React.FC = () => {
     try {
       // 1. Search Flights
       const flightRes = await fetch(`/api/flights/search?origin=${searchCriteria.origin}&destination=MLE&departureDate=${searchCriteria.departureDate}&returnDate=${searchCriteria.returnDate}&adults=${searchCriteria.adults}`);
+      if (!flightRes.ok) {
+        const errorText = await flightRes.text();
+        try {
+          const errorJson = JSON.parse(errorText);
+          throw new Error(errorJson.details || errorJson.error || 'Failed to fetch flight offers');
+        } catch {
+          throw new Error('Server returned an invalid response while fetching flights');
+        }
+      }
       const flightData = await flightRes.json();
       if (flightData.error) throw new Error(flightData.details || flightData.error);
       setFlights(flightData.data || []);
 
       // 2. Search Hotels (MLE)
       const hotelRes = await fetch(`/api/hotels/search?cityCode=MLE&checkInDate=${searchCriteria.departureDate}&checkOutDate=${searchCriteria.returnDate}&adults=${searchCriteria.adults}`);
+      if (!hotelRes.ok) throw new Error('Failed to fetch hotel offers');
       const hotelData = await hotelRes.json();
       setHotels(hotelData.data || []);
 
       // 3. Search Activities (MLE Coordinates: 4.1755, 73.5093)
       const activityRes = await fetch(`/api/activities/search?latitude=4.1755&longitude=73.5093`);
+      if (!activityRes.ok) throw new Error('Failed to fetch activities');
       const activityData = await activityRes.json();
       setActivities(activityData.data || []);
 
@@ -132,6 +144,7 @@ const SmartPlanner: React.FC = () => {
         })
       });
       
+      if (!res.ok) throw new Error('Failed to confirm itinerary');
       const data = await res.json();
       if (data.success) {
         setSubmitted(true);
