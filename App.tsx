@@ -54,7 +54,7 @@ const AppContent: React.FC = () => {
   const { isDiscoveryMode } = useBag();
 
   return (
-    <>
+    <BrowserRouter>
       <ScrollToTopOnRoute />
       <UserPanel />
       {!isDiscoveryMode && <Navbar />}
@@ -96,7 +96,7 @@ const AppContent: React.FC = () => {
       <CookieConsent />
       <OfferNewsletterPopup />
       {!isDiscoveryMode && <Footer />}
-    </>
+    </BrowserRouter>
   );
 };
 

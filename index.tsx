@@ -1,7 +1,6 @@
 
 import React from 'react';
-import { hydrateRoot } from 'react-dom/client';
-import { BrowserRouter } from 'react-router-dom';
+import { createRoot } from 'react-dom/client';
 import { HelmetProvider } from 'react-helmet-async';
 import App from './App.tsx';
 import './lib/i18n.ts';
@@ -11,13 +10,11 @@ if (!rootElement) {
   throw new Error("Could not find root element to mount to");
 }
 
-hydrateRoot(
-  rootElement,
+const root = createRoot(rootElement);
+root.render(
   <React.StrictMode>
     <HelmetProvider>
-      <BrowserRouter>
-        <App />
-      </BrowserRouter>
+      <App />
     </HelmetProvider>
   </React.StrictMode>
 );

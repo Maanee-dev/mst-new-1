@@ -134,81 +134,51 @@ async function startServer() {
     res.sendFile(filePath);
   });
 
-  app.listen(PORT, '0.0.0.0', () => {
-    console.log(`Server running on port ${PORT}`);
-  });
-
     if (process.env.NODE_ENV !== 'production') {
       const vite = await createViteServer({
         server: { middlewareMode: true },
-        appType: 'custom',
+        appType: 'spa',
       });
-      console.log('Vite dev server created (SSR mode)');
+      console.log('Vite dev server created');
       app.use(vite.middlewares);
 
       app.get('*', async (req, res, next) => {
         const url = req.originalUrl;
-        console.log(`Handling SSR request for: ${url}`);
+        console.log(`Handling request for: ${url}`);
 
         // Skip API and Auth routes
-        if (url.startsWith('/api') || url.startsWith('/auth')) {
+        if (url.startsWith('/api') || url.startsWith('/auth') || url.startsWith('/health')) {
           return next();
         }
 
-        // Skip files with extensions
+        // Skip files with extensions (likely handled by vite.middlewares or missing)
         if (path.extname(url)) {
           return next();
         }
 
         try {
-          let template = fs.readFileSync(path.resolve(__dirname, 'index.html'), 'utf-8');
+          const indexPath = path.resolve(__dirname, 'index.html');
+          console.log(`Reading index.html from: ${indexPath}`);
+          let template = fs.readFileSync(indexPath, 'utf-8');
           template = await vite.transformIndexHtml(url, template);
-          
-          const { render } = await vite.ssrLoadModule('/entry-server.tsx');
-          
-          const helmetContext = {};
-          const appHtml = await render(url, helmetContext);
-          const { helmet } = helmetContext as any;
-
-          // Replace meta tags and title if they exist in helmet
-          let headTags = '';
-          if (helmet) {
-            headTags += helmet.title.toString();
-            headTags += helmet.meta.toString();
-            headTags += helmet.link.toString();
-            headTags += helmet.script.toString();
-          }
-
-          // Inject rendered app and helmet tags
-          const html = template
-            .replace('<!--app-head-->', headTags)
-            .replace('<div id="root"></div>', `<div id="root">${appHtml}</div>`);
-
-          res.status(200).set({ 'Content-Type': 'text/html' }).end(html);
+          res.status(200).set({ 'Content-Type': 'text/html' }).end(template);
         } catch (e) {
-          console.error('SSR Error:', e);
+          console.error('SPA Catch-all Error:', e);
           vite.ssrFixStacktrace(e as Error);
           next(e);
         }
       });
     } else {
-      // Production SSR (simplified for this environment)
-      app.use(express.static(path.join(__dirname, 'dist'), { index: false }));
-      
-      app.get('*', async (req, res) => {
-        try {
-          const url = req.originalUrl;
-          const template = fs.readFileSync(path.join(__dirname, 'dist', 'index.html'), 'utf-8');
-          
-          // In production, we'd normally use a pre-built server entry
-          // But here we'll try to use the same logic if possible or fallback to static
-          res.sendFile(path.join(__dirname, 'dist', 'index.html'));
-        } catch (e) {
-          res.status(500).end('Internal Server Error');
-        }
+      app.use(express.static(path.join(__dirname, 'dist')));
+      app.get('*', (req, res) => {
+        res.sendFile(path.join(__dirname, 'dist', 'index.html'));
       });
     }
-} catch (error) {
+
+    app.listen(PORT, '0.0.0.0', () => {
+      console.log(`Server running on port ${PORT}`);
+    });
+  } catch (error) {
     console.error('Failed to start server:', error);
   }
 }
