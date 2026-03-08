@@ -1,69 +1,14 @@
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { motion } from 'motion/react';
+import { supabase, mapResort } from '../lib/supabase';
 
-const galleryImages = [
-  {
-    url: 'https://images.unsplash.com/photo-1514282401047-d79a71a590e8?auto=format&fit=crop&q=80&w=800',
-    resort: 'Patina Maldives',
-    bw: true,
-    text: 'A sanctuary of modern design and natural beauty.'
-  },
-  {
-    url: 'https://images.unsplash.com/photo-1590523277543-a94d2e4eb00b?auto=format&fit=crop&q=80&w=800',
-    resort: 'One&Only Reethi Rah',
-    bw: true,
-    text: 'Ultra-luxury redefined in the heart of the Indian Ocean.'
-  },
-  {
-    url: 'https://images.unsplash.com/photo-1544550581-5f7ceaf7f992?auto=format&fit=crop&q=80&w=800',
-    resort: 'Villa Nautica Paradise Island Resort',
-    bw: true,
-    text: 'Where the rhythm of the ocean meets timeless elegance.'
-  },
-  {
-    url: 'https://images.unsplash.com/photo-1502602898657-3e917247a183?auto=format&fit=crop&q=80&w=800',
-    resort: 'Sun Siyam Olhuveli',
-    bw: true,
-    text: 'Traditional Maldivian charm with a contemporary twist.'
-  },
-  {
-    url: 'https://images.unsplash.com/photo-1510011564758-29df30730163?auto=format&fit=crop&q=80&w=800',
-    resort: 'JOALI Maldives',
-    bw: false,
-    text: 'The first art-immersive resort in the Maldives.'
-  },
-  {
-    url: 'https://images.unsplash.com/photo-1439066615861-d1af74d74000?auto=format&fit=crop&q=80&w=800',
-    resort: 'The Nautilus Maldives',
-    bw: false,
-    text: 'A world of your own making, where time stands still.'
-  },
-  {
-    url: 'https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?auto=format&fit=crop&q=80&w=800',
-    resort: 'NH Collection Maldives Reethi Resort',
-    bw: false,
-    text: 'Eco-friendly luxury on a lush tropical island.'
-  },
-  {
-    url: 'https://images.unsplash.com/photo-1506929199175-6374f608c05a?auto=format&fit=crop&q=80&w=800',
-    resort: 'Patina Maldives',
-    bw: true,
-    text: 'Spiritual harmony and artistic expression.'
-  },
-  {
-    url: 'https://images.unsplash.com/photo-1516815231560-8581bb6309f2?auto=format&fit=crop&q=80&w=800',
-    resort: 'One&Only Reethi Rah',
-    bw: true,
-    text: 'Secluded villas and pristine white sands.'
-  },
-  {
-    url: 'https://images.unsplash.com/photo-1540206351-d6465b3ac5c1?auto=format&fit=crop&q=80&w=800',
-    resort: 'JOALI Maldives',
-    bw: false,
-    text: 'Joy of living in every detail.'
-  }
-];
+interface GalleryImage {
+  url: string;
+  resort: string;
+  bw: boolean;
+  text: string;
+}
 
 const maldivesFacts = [
   "The Maldives consists of 1,192 coral islands grouped in a double chain of 26 atolls.",
@@ -74,52 +19,124 @@ const maldivesFacts = [
   "The traditional Maldivian culture is a rich blend of African, Indian, and Arabian influences."
 ];
 
-const GalleryRow: React.FC<{ images: typeof galleryImages; direction: 'left' | 'right'; speed?: number }> = ({ images, direction, speed = 40 }) => {
-  const duplicatedImages = [...images, ...images, ...images]; // Triple for smooth looping
+const RESORT_NAMES = [
+  'Patina Maldives',
+  'One&Only Reethi Rah',
+  'Villa Nautica Paradise Island Resort',
+  'Sun Siyam Olhuveli',
+  'JOALI Maldives',
+  'The Nautilus Maldives',
+  'NH Collection Maldives Reethi Resort'
+];
 
-  return (
-    <div className="flex overflow-hidden py-4">
-      <motion.div
-        className="flex gap-6 px-3"
-        animate={{
-          x: direction === 'left' ? [0, -100 * images.length] : [-100 * images.length, 0],
-        }}
-        transition={{
-          duration: speed,
-          repeat: Infinity,
-          ease: "linear",
-        }}
-      >
-        {duplicatedImages.map((img, idx) => (
-          <div
-            key={`${img.resort}-${idx}`}
-            className="flex-shrink-0 w-[300px] md:w-[450px] relative group"
-          >
-            <div className={`aspect-[4/3] rounded-[2rem] overflow-hidden shadow-lg transition-all duration-700 ${img.bw ? 'grayscale hover:grayscale-0' : ''}`}>
-              <img
-                src={img.url}
-                alt={img.resort}
-                className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-                referrerPolicy="no-referrer"
-              />
-            </div>
-            <div className="mt-4 px-2">
-              <span className="text-[8px] font-black text-sky-500 uppercase tracking-[0.4em] mb-1 block">{img.resort}</span>
-              <p className="text-[10px] font-bold text-slate-400 dark:text-slate-600 uppercase tracking-widest leading-relaxed line-clamp-1">
-                {img.text}
-              </p>
-            </div>
-          </div>
-        ))}
-      </motion.div>
-    </div>
-  );
-};
+const BW_RESORTS = [
+  'Patina Maldives',
+  'One&Only Reethi Rah',
+  'Villa Nautica Paradise Island Resort',
+  'Sun Siyam Olhuveli'
+];
 
 const MaldivesGallery: React.FC = () => {
+  const [images, setImages] = useState<GalleryImage[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchResortImages = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('resorts')
+          .select('*')
+          .in('name', RESORT_NAMES);
+
+        if (error) throw error;
+
+        if (data) {
+          const mappedResorts = data.map(item => mapResort(item));
+          const allImages: GalleryImage[] = [];
+
+          mappedResorts.forEach(resort => {
+            const isBW = BW_RESORTS.includes(resort.name);
+            resort.images.forEach(imgUrl => {
+              allImages.push({
+                url: imgUrl,
+                resort: resort.name,
+                bw: isBW,
+                text: resort.shortDescription || `Experience the beauty of ${resort.name}.`
+              });
+            });
+          });
+
+          // Shuffle images for a "random" feel as requested
+          setImages(allImages.sort(() => Math.random() - 0.5));
+        }
+      } catch (err) {
+        console.error('Failed to fetch gallery images:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchResortImages();
+  }, []);
+
+  const GalleryRow: React.FC<{ rowImages: GalleryImage[]; direction: 'left' | 'right'; speed?: number }> = ({ rowImages, direction, speed = 40 }) => {
+    if (rowImages.length === 0) return null;
+    const duplicatedImages = [...rowImages, ...rowImages, ...rowImages]; // Triple for smooth looping
+
+    return (
+      <div className="flex overflow-hidden py-4">
+        <motion.div
+          className="flex gap-6 px-3"
+          animate={{
+            x: direction === 'left' ? [0, -100 * rowImages.length] : [-100 * rowImages.length, 0],
+          }}
+          transition={{
+            duration: speed,
+            repeat: Infinity,
+            ease: "linear",
+          }}
+        >
+          {duplicatedImages.map((img, idx) => (
+            <div
+              key={`${img.resort}-${idx}`}
+              className="flex-shrink-0 w-[300px] md:w-[450px] relative group"
+            >
+              <div className={`aspect-[4/3] rounded-[2rem] overflow-hidden shadow-lg transition-all duration-700 ${img.bw ? 'grayscale hover:grayscale-0' : ''}`}>
+                <img
+                  src={img.url}
+                  alt={img.resort}
+                  className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                  referrerPolicy="no-referrer"
+                />
+              </div>
+              <div className="mt-4 px-2">
+                <span className="text-[8px] font-black text-sky-500 uppercase tracking-[0.4em] mb-1 block">{img.resort}</span>
+                <p className="text-[10px] font-bold text-slate-400 dark:text-slate-600 uppercase tracking-widest leading-relaxed line-clamp-1">
+                  {img.text}
+                </p>
+              </div>
+            </div>
+          ))}
+        </motion.div>
+      </div>
+    );
+  };
+
+  if (loading) {
+    return (
+      <section className="py-24 bg-white dark:bg-slate-950 flex items-center justify-center min-h-[400px]">
+        <div className="w-8 h-8 border-2 border-sky-500 border-t-transparent rounded-full animate-spin"></div>
+      </section>
+    );
+  }
+
+  const half = Math.ceil(images.length / 2);
+  const row1 = images.slice(0, half);
+  const row2 = images.slice(half);
+
   return (
     <section className="py-24 md:py-32 bg-white dark:bg-slate-950 transition-colors overflow-hidden">
-      <div className="max-w-[1440px] mx-auto px-6 lg:px-12 mb-16 reveal">
+      <div className="max-w-[1440px] mx-auto px-6 lg:px-12 mb-16 reveal active">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-10">
           <div className="max-w-2xl">
             <span className="text-[11px] font-black text-sky-500 uppercase tracking-[1em] mb-8 block">The Archipelago</span>
@@ -136,14 +153,14 @@ const MaldivesGallery: React.FC = () => {
       </div>
 
       <div className="space-y-8">
-        <GalleryRow images={galleryImages.slice(0, 5)} direction="left" speed={50} />
+        <GalleryRow rowImages={row1} direction="left" speed={60} />
         
         {/* Fact Marquee */}
         <div className="py-12 bg-slate-50 dark:bg-slate-900/30 border-y border-slate-100 dark:border-white/5 overflow-hidden">
           <motion.div
             className="flex gap-24 whitespace-nowrap"
             animate={{ x: [0, -2000] }}
-            transition={{ duration: 100, repeat: Infinity, ease: "linear" }}
+            transition={{ duration: 120, repeat: Infinity, ease: "linear" }}
           >
             {[...maldivesFacts, ...maldivesFacts].map((fact, i) => (
               <span key={i} className="text-2xl md:text-4xl font-serif font-medium text-slate-300 dark:text-slate-700 italic">
@@ -153,10 +170,10 @@ const MaldivesGallery: React.FC = () => {
           </motion.div>
         </div>
 
-        <GalleryRow images={galleryImages.slice(5)} direction="right" speed={60} />
+        <GalleryRow rowImages={row2} direction="right" speed={70} />
       </div>
 
-      <div className="max-w-[1440px] mx-auto px-6 lg:px-12 mt-20 text-center reveal">
+      <div className="max-w-[1440px] mx-auto px-6 lg:px-12 mt-20 text-center reveal active">
         <div className="inline-flex items-center gap-4 text-[9px] font-black text-slate-300 dark:text-slate-700 uppercase tracking-[0.5em]">
           <span>Interactive Horizon</span>
           <div className="w-24 h-px bg-slate-100 dark:bg-white/5"></div>
