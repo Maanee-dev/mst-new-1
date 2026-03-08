@@ -50,9 +50,24 @@ async function startServer() {
   const app = express();
   const PORT = 3000;
 
+  // Global Request Logger
+  app.use((req, res, next) => {
+    console.log(`[SERVER] ${req.method} ${req.url}`);
+    next();
+  });
+
   app.use(cors());
   app.use(express.json());
   
+  app.use(cookieSession({
+    name: 'session',
+    keys: [process.env.SESSION_SECRET || 'serenity-secret'],
+    maxAge: 24 * 60 * 60 * 1000, // 24 hours
+    secure: true,
+    sameSite: 'none',
+    httpOnly: true,
+  }));
+
   // API Router
   const apiRouter = express.Router();
 
@@ -70,15 +85,16 @@ async function startServer() {
     });
   });
 
-  // API Request Logger
+  // API Request Logger (specific to API)
   apiRouter.use((req, res, next) => {
-    console.log(`[API] ${req.method} ${req.path}`);
+    console.log(`[API-ROUTER] ${req.method} ${req.path}`);
     next();
   });
 
   // Flight Search Route (Amadeus)
   apiRouter.get('/flights/search', async (req, res) => {
     const { origin, destination, departureDate, returnDate, adults } = req.query;
+    console.log(`[API] Flight Search: ${origin} -> ${destination}`);
     
     if (!origin || !destination || !departureDate) {
       return res.status(400).json({ error: 'origin, destination, and departureDate are required' });
@@ -109,7 +125,7 @@ async function startServer() {
     } catch (error: any) {
       const errorData = error.response?.data;
       const errorMessage = errorData?.errors?.[0]?.detail || errorData?.message || error.message;
-      console.error('Flight API Error:', errorData || error.message);
+      console.error('[API] Flight API Error:', errorData || error.message);
       res.status(500).json({ 
         error: 'Failed to fetch live flight offers', 
         details: errorMessage 
@@ -120,6 +136,7 @@ async function startServer() {
   // Hotel Search Route (Amadeus)
   apiRouter.get('/hotels/search', async (req, res) => {
     const { cityCode, checkInDate, checkOutDate, adults } = req.query;
+    console.log(`[API] Hotel Search: ${cityCode}`);
     
     if (!cityCode) {
       return res.status(400).json({ error: 'cityCode is required' });
@@ -156,7 +173,7 @@ async function startServer() {
       res.json(offersResponse.data);
     } catch (error: any) {
       const errorData = error.response?.data;
-      console.error('Hotel API Error:', errorData || error.message);
+      console.error('[API] Hotel API Error:', errorData || error.message);
       res.status(500).json({ error: 'Failed to fetch hotel offers' });
     }
   });
@@ -164,6 +181,7 @@ async function startServer() {
   // Activities Search Route (Amadeus)
   apiRouter.get('/activities/search', async (req, res) => {
     const { latitude, longitude } = req.query;
+    console.log(`[API] Activities Search: ${latitude}, ${longitude}`);
     
     if (!latitude || !longitude) {
       return res.status(400).json({ error: 'latitude and longitude are required' });
@@ -180,7 +198,7 @@ async function startServer() {
       res.json(response.data);
     } catch (error: any) {
       const errorData = error.response?.data;
-      console.error('Activities API Error:', errorData || error.message);
+      console.error('[API] Activities API Error:', errorData || error.message);
       res.status(500).json({ error: 'Failed to fetch activities' });
     }
   });
@@ -188,6 +206,7 @@ async function startServer() {
   // Email Confirmation Route
   apiRouter.post('/itinerary/confirm', async (req, res) => {
     const { email, name, itinerary } = req.body;
+    console.log(`[API] Confirm Itinerary for: ${email}`);
     
     if (!email || !itinerary) {
       return res.status(400).json({ error: 'Email and itinerary are required' });
@@ -202,7 +221,7 @@ async function startServer() {
         message: `Itinerary successfully sent to ${email}. Our luxury concierge will contact you shortly.` 
       });
     } catch (error: any) {
-      console.error('Email Error:', error.message);
+      console.error('[API] Email Error:', error.message);
       res.status(500).json({ error: 'Failed to send itinerary' });
     }
   });
@@ -210,6 +229,7 @@ async function startServer() {
   // IATA City/Airport Search
   apiRouter.get('/flights/locations', async (req, res) => {
     const { keyword } = req.query;
+    console.log(`[API] Location Search: ${keyword}`);
     if (!keyword) return res.json([]);
 
     try {
@@ -220,6 +240,7 @@ async function startServer() {
       );
       res.json(response.data.data);
     } catch (error: any) {
+      console.error('[API] Location API Error:', error.message);
       res.status(500).json({ error: 'Failed to fetch locations' });
     }
   });
@@ -229,17 +250,9 @@ async function startServer() {
 
   // 404 for unmatched API routes (must be after apiRouter)
   app.use('/api', (req, res) => {
+    console.log(`[API] 404 Not Found: ${req.url}`);
     res.status(404).json({ error: 'API route not found' });
   });
-
-  app.use(cookieSession({
-    name: 'session',
-    keys: [process.env.SESSION_SECRET || 'serenity-secret'],
-    maxAge: 24 * 60 * 60 * 1000, // 24 hours
-    secure: true,
-    sameSite: 'none',
-    httpOnly: true,
-  }));
 
   app.get('/robots.txt', (req, res) => {
     const filePath = process.env.NODE_ENV === 'production' 
