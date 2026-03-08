@@ -75,9 +75,9 @@ const AboutUs: React.FC = () => {
   return (
     <div className="bg-parchment dark:bg-slate-950 min-h-screen selection:bg-sky-100 selection:text-sky-900 transition-colors duration-700 font-sans">
       <SEO 
-        title="About Us | Maldives Serenity Travels" 
-        description="Learn about Maldives Serenity Travels, your trusted specialist for curated luxury resort experiences and bespoke island escapes in the Maldives."
-        keywords={['Maldives travel agency', 'luxury travel specialist', 'about Maldives Serenity Travels', 'bespoke Maldives holidays']}
+        title="About Us | Maldives Serenity Travels - Your Luxury Maldives Experts"
+        description="Learn about Maldives Serenity Travels, the premier luxury travel agency specializing in bespoke Maldivian experiences. Discover our mission, values, and why we are the top choice for Maldives travel."
+        keywords={['Maldives travel agency', 'luxury travel specialist', 'about Maldives Serenity Travels', 'bespoke Maldives holidays', 'Maldives luxury experts']}
       />
 
       {/* Magazine Hero Section */}

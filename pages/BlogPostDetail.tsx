@@ -5,6 +5,8 @@ import { supabase } from '../lib/supabase';
 import { BlogPost } from '../types';
 import { BLOG_POSTS } from '../constants';
 
+import SEO from '../components/SEO';
+
 const BlogPostDetail: React.FC = () => {
   const { slug } = useParams<{ slug: string }>();
   const [post, setPost] = useState<BlogPost | null>(null);
@@ -38,7 +40,6 @@ const BlogPostDetail: React.FC = () => {
 
   useEffect(() => {
     if (post) {
-      document.title = `${post.title} | Serenity Journal`;
       window.scrollTo(0, 0);
     }
   }, [post]);
@@ -53,6 +54,12 @@ const BlogPostDetail: React.FC = () => {
 
   return (
     <article className="bg-white dark:bg-slate-950 min-h-screen selection:bg-sky-100 dark:selection:bg-sky-900/30">
+      <SEO 
+        title={`${post.title} | Maldives Serenity Travel Journal`}
+        description={post.excerpt}
+        image={post.image}
+        article={true}
+      />
       <div className="relative h-[70vh] w-full overflow-hidden">
          <img src={post.image} alt={post.title} className="w-full h-full object-cover scale-105" />
          <div className="absolute inset-0 bg-slate-950/20"></div>

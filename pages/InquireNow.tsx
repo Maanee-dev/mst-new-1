@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import Fuse from 'fuse.js';
 import { motion, AnimatePresence } from 'motion/react';
 import { supabase, mapResort } from '../lib/supabase';
@@ -13,6 +14,7 @@ import CalendarSelector from '../components/CalendarSelector';
 import GuestSelector from '../components/GuestSelector';
 
 const InquireNow: React.FC = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [resorts, setResorts] = useState<Accommodation[]>([]);
   const [loading, setLoading] = useState(true);
@@ -80,8 +82,9 @@ const InquireNow: React.FC = () => {
   return (
     <div className="bg-parchment dark:bg-slate-950 min-h-screen transition-colors duration-700">
       <SEO 
-        title="Inquire Now | Maldives Serenity Travels" 
-        description="Search and discover your perfect Maldivian sanctuary. Filter by atoll, transfer type, and accommodation style to find your ideal escape."
+        title={t('seo.inquireTitle')} 
+        description={t('seo.inquireDesc')}
+        keywords={['Maldives inquiry', 'book Maldives resort', 'Maldives travel filters', 'find Maldives sanctuary']}
       />
 
       {/* Hero Section */}

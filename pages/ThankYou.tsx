@@ -1,10 +1,12 @@
 import React, { useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { motion } from 'motion/react';
 import { Check, Mail, ArrowRight, Home } from 'lucide-react';
 import SEO from '../components/SEO';
 
 const ThankYou: React.FC = () => {
+  const { t } = useTranslation();
   const location = useLocation();
   const itemName = location.state?.resortName || 'your sanctuary';
   const type = location.state?.type || 'resort';
@@ -16,7 +18,11 @@ const ThankYou: React.FC = () => {
 
   return (
     <div className="bg-parchment dark:bg-slate-950 min-h-screen flex items-center justify-center p-6 transition-colors duration-700">
-      <SEO title="Thank You | Maldives Serenity Travels" description="Your inquiry has been received." />
+      <SEO 
+        title={t('seo.thankYouTitle')} 
+        description={t('seo.thankYouDesc')} 
+        keywords={['Maldives inquiry success', 'thank you Maldives serenity']}
+      />
       
       <motion.div 
         initial={{ opacity: 0, scale: 0.9 }}

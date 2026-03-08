@@ -1,6 +1,7 @@
 
 import React, { useEffect, useState, useMemo } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import Fuse from 'fuse.js';
 import { supabase, mapResort, mapOffer } from '../lib/supabase';
 import { RESORTS, OFFERS, EXPERIENCES, BLOG_POSTS } from '../constants';
@@ -11,6 +12,7 @@ import { Plus, Check } from 'lucide-react';
 import { useBag } from '../context/BagContext';
 
 const SearchPage: React.FC = () => {
+  const { t } = useTranslation();
   const [searchParams] = useSearchParams();
   const query = searchParams.get('q') || '';
   
@@ -117,8 +119,9 @@ const SearchPage: React.FC = () => {
   return (
     <div className="bg-parchment dark:bg-slate-950 min-h-screen selection:bg-sky-100 selection:text-sky-900 pb-32 overflow-x-hidden transition-colors duration-700">
       <SEO 
-        title={`Search results for "${query}" | Serenity Discovery`} 
-        description={`Unified discovery results for ${query} across Maldivian resorts, offers, experiences, and editorial stories.`}
+        title={t('seo.searchTitle', { query })} 
+        description={t('seo.searchDesc', { query })}
+        keywords={['Maldives search', query, 'Maldives discovery', 'Maldives travel search']}
       />
 
       {/* Cinematic Header */}

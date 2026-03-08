@@ -1,12 +1,15 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import SEO from '../components/SEO';
 
 const Privacy: React.FC = () => {
+  const { t } = useTranslation();
   return (
     <div className="bg-[#FCFAF7] min-h-screen pb-32">
       <SEO 
-        title="Privacy Policy | Digital Sanctity" 
-        description="Our commitment to protecting your personal data and maintaining the confidentiality of your travel vision."
+        title={t('seo.privacyTitle')} 
+        description={t('seo.privacyDesc')}
+        keywords={['Maldives travel privacy', 'data protection Maldives', 'Serenity Maldives privacy']}
       />
       
       {/* Cinematic Hero Section */}

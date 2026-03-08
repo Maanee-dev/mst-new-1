@@ -156,12 +156,7 @@ const Home: React.FC = () => {
         title={t('seo.homeTitle')} 
         description={t('seo.homeDesc')}
         isOrganization={true}
-        keywords={[
-          'Maldives luxury travel', 'best resorts Maldives', 'Maldives holiday packages', 
-          'overwater villas Maldives', 'Maldives honeymoon', 'private island resorts',
-          'Maldives travel agency', 'luxury travel Maldives', 'bespoke Maldives escapes',
-          'Addu City travel', 'Southern atolls Maldives', 'Maldives vacation planning'
-        ]}
+        keywords={t('seo.homeKeywords').split(', ')}
       />
 
       {/* Hero Section */}

@@ -8,6 +8,16 @@
   <url><loc>https://maldives-serenitytravels.com/stories</loc><lastmod>2024-05-25</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
   <url><loc>https://maldives-serenitytravels.com/about</loc><lastmod>2024-05-25</lastmod><changefreq>monthly</changefreq><priority>0.5</priority></url>
   <url><loc>https://maldives-serenitytravels.com/contact</loc><lastmod>2024-05-25</lastmod><changefreq>monthly</changefreq><priority>0.5</priority></url>
+  <url><loc>https://maldives-serenitytravels.com/faq</loc><lastmod>2024-05-25</lastmod><changefreq>monthly</changefreq><priority>0.5</priority></url>
+  <url><loc>https://maldives-serenitytravels.com/plan</loc><lastmod>2024-05-25</lastmod><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://maldives-serenitytravels.com/terms</loc><lastmod>2024-05-25</lastmod><changefreq>monthly</changefreq><priority>0.3</priority></url>
+  <url><loc>https://maldives-serenitytravels.com/privacy</loc><lastmod>2024-05-25</lastmod><changefreq>monthly</changefreq><priority>0.3</priority></url>
+
+  <!-- Individual Offers -->
+  <url><loc>https://maldives-serenitytravels.com/offers/off-1</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://maldives-serenitytravels.com/offers/off-2</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://maldives-serenitytravels.com/offers/off-3</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://maldives-serenitytravels.com/offers/off-4</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>
 
   <!-- Resort Portfolio Slugs -->
   <url><loc>https://maldives-serenitytravels.com/stays/adaaran-prestige-vadoo</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>

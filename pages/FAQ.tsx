@@ -78,8 +78,9 @@ const FAQ: React.FC = () => {
   return (
     <div className="bg-parchment dark:bg-slate-950 min-h-screen pt-32 pb-24 transition-colors duration-700">
       <SEO 
-        title="Travel FAQ | Maldives Serenity Travels" 
-        description="Find answers to common questions about traveling to the Maldives, including visas, transfers, packing tips, and more."
+        title="Travel FAQ | Maldives Serenity Travels - Essential Maldives Information"
+        description="Find answers to frequently asked questions about traveling to the Maldives. Learn about entry requirements, weather, transfers, and more to ensure a smooth and serene journey."
+        keywords={['Maldives travel FAQ', 'Maldives entry requirements', 'Maldives weather', 'Maldives resort transfers', 'Maldives travel tips']}
       />
 
       <div className="max-w-[1440px] mx-auto px-6 lg:px-12">

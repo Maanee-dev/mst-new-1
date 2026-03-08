@@ -24,8 +24,9 @@ const Contact: React.FC = () => {
   return (
     <div className="bg-parchment dark:bg-slate-950 min-h-screen selection:bg-sky-100 selection:text-sky-900 overflow-x-hidden transition-colors duration-700">
       <SEO 
-        title={t('contactPage.title') + " | Maldives Serenity Travels"} 
-        description={t('contactPage.subtitle')}
+        title={t('contactPage.title') + " | Maldives Serenity Travels - Plan Your Maldives Escape"} 
+        description="Get in touch with our luxury travel consultants to plan your perfect Maldives getaway. We offer personalized assistance for resort bookings, private transfers, and bespoke experiences."
+        keywords={['contact Maldives Serenity Travels', 'Maldives travel consultant', 'book Maldives resort', 'Maldives travel help', 'Maldives luxury travel planner']}
       />
 
       {/* Hero Section */}

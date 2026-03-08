@@ -1,12 +1,15 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import SEO from '../components/SEO';
 
 const Terms: React.FC = () => {
+  const { t } = useTranslation();
   return (
     <div className="bg-[#FCFAF7] dark:bg-slate-950 min-h-screen pb-32 transition-colors duration-300">
       <SEO 
-        title="Terms & Conditions | The Legal Framework" 
-        description="Review the terms of service and booking conditions for Serenity Maldives Travel Agency."
+        title={t('seo.termsTitle')} 
+        description={t('seo.termsDesc')}
+        keywords={['Maldives travel terms', 'booking conditions Maldives', 'Serenity Maldives legal']}
       />
       
       {/* Cinematic Hero Section */}

@@ -159,9 +159,19 @@ const resources = {
         }
       },
       seo: {
-        homeTitle: "Maldives Serenity Travels | Luxury Maldives Travel Agency & Bespoke Holidays",
+        homeTitle: "Maldives Luxury Travel & Bespoke Holidays | Maldives Serenity Travels",
         homeDesc: "Discover the ultimate Maldivian escape with Maldives Serenity Travels. We specialize in luxury Maldives holidays, overwater villas, private island resorts, and bespoke travel experiences. Book your dream vacation in the Indian Ocean today.",
-        homeKeywords: "Maldives luxury travel, bespoke Maldives holidays, luxury resorts Maldives, overwater villas Maldives, Maldives travel agency, private island Maldives, Maldives honeymoon packages, luxury travel specialist Maldives, Maldives vacation planning, best resorts in Maldives"
+        homeKeywords: "Maldives luxury travel, bespoke Maldives holidays, luxury resorts Maldives, overwater villas Maldives, Maldives travel agency, private island Maldives, Maldives honeymoon packages, luxury travel specialist Maldives, Maldives vacation planning, best resorts in Maldives, Maldives serenity travels",
+        searchTitle: "Search results for \"{{query}}\" | Maldives Serenity Travels",
+        searchDesc: "Unified discovery results for {{query}} across Maldivian resorts, offers, experiences, and editorial stories.",
+        termsTitle: "Terms & Conditions | Maldives Serenity Travels",
+        termsDesc: "Review the terms of service and booking conditions for Maldives Serenity Travels. Our legal framework for luxury Maldives travel bookings.",
+        privacyTitle: "Privacy Policy | Maldives Serenity Travels",
+        privacyDesc: "Our commitment to protecting your personal data and maintaining the confidentiality of your Maldives travel vision.",
+        inquireTitle: "Inquire Now | Maldives Serenity Travels",
+        inquireDesc: "Search and discover your perfect Maldivian sanctuary. Filter by atoll, transfer type, and accommodation style to find your ideal Maldives escape.",
+        thankYouTitle: "Thank You | Maldives Serenity Travels",
+        thankYouDesc: "Your inquiry has been received. Our Maldives travel specialists will be in touch shortly."
       },
       contactPage: {
         badge: "CONNECT",
