@@ -134,14 +134,10 @@ async function startServer() {
     res.sendFile(filePath);
   });
 
-  app.listen(PORT, '0.0.0.0', () => {
-    console.log(`Server running on port ${PORT}`);
-  });
-
-  if (process.env.NODE_ENV !== 'production') {
+    if (process.env.NODE_ENV !== 'production') {
     const vite = await createViteServer({
       server: { middlewareMode: true },
-      appType: 'spa',
+      appType: 'custom',
     });
     console.log('Vite dev server created');
     app.use(vite.middlewares);
@@ -178,6 +174,10 @@ async function startServer() {
       res.sendFile(path.join(__dirname, 'dist', 'index.html'));
     });
   }
+
+  app.listen(PORT, '0.0.0.0', () => {
+    console.log(`Server running on port ${PORT}`);
+  });
 } catch (error) {
     console.error('Failed to start server:', error);
   }
