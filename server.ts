@@ -126,6 +126,103 @@ async function startServer() {
     }
   });
 
+  // Hotel Search Route (Amadeus)
+  app.get('/api/hotels/search', async (req, res) => {
+    const { cityCode, checkInDate, checkOutDate, adults } = req.query;
+    
+    if (!cityCode) {
+      return res.status(400).json({ error: 'cityCode is required' });
+    }
+
+    try {
+      const token = await getAmadeusToken();
+      
+      // 1. Get list of hotels in the city
+      const hotelsListResponse = await axios.get(
+        `https://test.api.amadeus.com/v1/reference-data/locations/hotels/by-city?cityCode=${cityCode}&radius=50&radiusUnit=KM&hotelSource=ALL`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      const hotelIds = hotelsListResponse.data.data.slice(0, 20).map((h: any) => h.hotelId).join(',');
+
+      if (!hotelIds) {
+        return res.json({ data: [] });
+      }
+
+      // 2. Get offers for those hotels
+      const params = new URLSearchParams({
+        hotelIds,
+        adults: (adults as string) || '1',
+        currency: 'USD'
+      });
+
+      if (checkInDate) params.append('checkInDate', checkInDate as string);
+      if (checkOutDate) params.append('checkOutDate', checkOutDate as string);
+
+      const offersResponse = await axios.get(
+        `https://test.api.amadeus.com/v3/shopping/hotel-offers?${params.toString()}`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      res.json(offersResponse.data);
+    } catch (error: any) {
+      const errorData = error.response?.data;
+      console.error('Hotel API Error:', errorData || error.message);
+      res.status(500).json({ error: 'Failed to fetch hotel offers' });
+    }
+  });
+
+  // Activities Search Route (Amadeus)
+  app.get('/api/activities/search', async (req, res) => {
+    const { latitude, longitude } = req.query;
+    
+    if (!latitude || !longitude) {
+      // Default to Male, Maldives if not provided
+      return res.status(400).json({ error: 'latitude and longitude are required' });
+    }
+
+    try {
+      const token = await getAmadeusToken();
+      
+      const response = await axios.get(
+        `https://test.api.amadeus.com/v1/shopping/activities?latitude=${latitude}&longitude=${longitude}&radius=20`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      res.json(response.data);
+    } catch (error: any) {
+      const errorData = error.response?.data;
+      console.error('Activities API Error:', errorData || error.message);
+      res.status(500).json({ error: 'Failed to fetch activities' });
+    }
+  });
+
+  // Email Confirmation Route
+  app.post('/api/itinerary/confirm', async (req, res) => {
+    const { email, name, itinerary } = req.body;
+    
+    if (!email || !itinerary) {
+      return res.status(400).json({ error: 'Email and itinerary are required' });
+    }
+
+    try {
+      console.log(`[Email] Sending itinerary to ${email} for ${name}`);
+      // In a real production app, use SendGrid, Mailgun, or AWS SES here.
+      // For this demo, we'll simulate a successful send.
+      
+      // Simulate delay
+      await new Promise(resolve => setTimeout(resolve, 1500));
+
+      res.json({ 
+        success: true, 
+        message: `Itinerary successfully sent to ${email}. Our luxury concierge will contact you shortly.` 
+      });
+    } catch (error: any) {
+      console.error('Email Error:', error.message);
+      res.status(500).json({ error: 'Failed to send itinerary' });
+    }
+  });
+
   // IATA City/Airport Search
   app.get('/api/flights/locations', async (req, res) => {
     const { keyword } = req.query;
