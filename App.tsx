@@ -23,7 +23,7 @@ import Experiences from './pages/Experiences.tsx';
 import ExperienceDetail from './pages/ExperienceDetail.tsx';
 import Stories from './pages/Stories.tsx';
 import BlogPostDetail from './pages/BlogPostDetail.tsx';
-import SmartPlanner from './pages/SmartPlanner.tsx';
+import PlanMyTrip from './pages/PlanMyTrip.tsx';
 import AboutUs from './pages/AboutUs.tsx';
 import Contact from './pages/Contact.tsx';
 import FAQ from './pages/FAQ.tsx';
@@ -73,7 +73,7 @@ const AppContent: React.FC = () => {
         <Route path="/experiences/:slug" element={<ExperienceDetail />} />
         <Route path="/stories" element={<Stories />} />
         <Route path="/stories/:slug" element={<BlogPostDetail />} />
-        <Route path="/plan" element={<SmartPlanner />} />
+        <Route path="/plan" element={<PlanMyTrip />} />
         <Route path="/about" element={<AboutUs />} />
         <Route path="/contact" element={<Contact />} />
         <Route path="/faq" element={<FAQ />} />
