@@ -323,7 +323,7 @@ const Home: React.FC = () => {
       {/* Live Flight Board Section */}
       <section className="py-24 md:py-32 lg:py-48 bg-white dark:bg-slate-950 border-y border-slate-100 dark:border-white/5">
         <div className="max-w-[1440px] mx-auto px-6 lg:px-20">
-          <LiveFlightBoard limit={5} />
+          <LiveFlightBoard limit={10} />
         </div>
       </section>
 

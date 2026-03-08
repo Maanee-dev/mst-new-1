@@ -52,11 +52,11 @@ const LiveFlightBoard: React.FC<{ limit?: number; showHeader?: boolean }> = ({ l
       const token = authData.access_token;
 
       // 2. Fetch flights from major hubs to MLE for today
-      const origins = ['DXB', 'DOH', 'CMB', 'SIN', 'IST', 'AUH', 'LHR'];
+      const origins = ['DXB', 'DOH', 'CMB', 'SIN', 'IST', 'AUH', 'LHR', 'KUL', 'BKK', 'DEL', 'BOM', 'MAA', 'HKG', 'FRA', 'CDG', 'MXP', 'ZRH'];
       const today = new Date().toISOString().split('T')[0];
       
       const flightPromises = origins.map(origin => 
-        fetch(`https://test.api.amadeus.com/v2/shopping/flight-offers?originLocationCode=${origin}&destinationLocationCode=MLE&departureDate=${today}&adults=1&max=5&currencyCode=USD`, {
+        fetch(`https://test.api.amadeus.com/v2/shopping/flight-offers?originLocationCode=${origin}&destinationLocationCode=MLE&departureDate=${today}&adults=1&max=10&currencyCode=USD`, {
           headers: { Authorization: `Bearer ${token}` }
         }).then(async res => {
           if (!res.ok) return { data: [] }; // Ignore individual failures
@@ -98,8 +98,44 @@ const LiveFlightBoard: React.FC<{ limit?: number; showHeader?: boolean }> = ({ l
         }
       });
 
-      // Sort by arrival time
-      allFlights.sort((a, b) => a.scheduledArrival.localeCompare(b.scheduledArrival));
+      if (allFlights.length < 10) {
+        // If few flights found for today, also fetch for tomorrow to fill the board
+        const tomorrow = new Date();
+        tomorrow.setDate(tomorrow.getDate() + 1);
+        const tomorrowStr = tomorrow.toISOString().split('T')[0];
+        
+        const extraPromises = origins.slice(0, 5).map(origin => 
+          fetch(`https://test.api.amadeus.com/v2/shopping/flight-offers?originLocationCode=${origin}&destinationLocationCode=MLE&departureDate=${tomorrowStr}&adults=1&max=10&currencyCode=USD`, {
+            headers: { Authorization: `Bearer ${token}` }
+          }).then(async res => {
+            if (!res.ok) return { data: [] };
+            return res.json();
+          }).catch(() => ({ data: [] }))
+        );
+
+        const extraResults = await Promise.all(extraPromises);
+        extraResults.forEach((res) => {
+          if (res.data && res.data.length > 0) {
+            res.data.forEach((offer: any) => {
+              const segment = offer.itineraries[0].segments[offer.itineraries[0].segments.length - 1];
+              const arrivalTime = new Date(segment.arrival.at);
+              
+              allFlights.push({
+                flightNumber: `${segment.carrierCode}${segment.number}`,
+                airline: res.dictionaries?.carriers?.[segment.carrierCode] || segment.carrierCode,
+                origin: segment.departure.iataCode,
+                destination: 'MLE',
+                scheduledArrival: arrivalTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false }),
+                status: 'ON TIME',
+                terminal: segment.arrival.terminal || 'I'
+              });
+            });
+          }
+        });
+        
+        // Re-sort after adding tomorrow's flights
+        allFlights.sort((a, b) => a.scheduledArrival.localeCompare(b.scheduledArrival));
+      }
 
       if (allFlights.length === 0) {
         // If no flights found for today, try tomorrow as a fallback
