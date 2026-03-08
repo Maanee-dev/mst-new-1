@@ -26,91 +26,80 @@ const LiveFlightBoard: React.FC<{ limit?: number; showHeader?: boolean }> = ({ l
     setLoading(true);
     setError(null);
     try {
-      // In a real app, we would call Amadeus Flight Status API
-      // Since it's often restricted in test environments, we'll simulate a live feed 
-      // with realistic data for Male (MLE) arrivals.
-      
-      const mockFlights: FlightStatus[] = [
-        {
-          flightNumber: 'EK652',
-          airline: 'Emirates',
-          origin: 'DXB',
-          destination: 'MLE',
-          scheduledArrival: '15:30',
-          actualArrival: '15:25',
-          status: 'LANDED',
-          terminal: 'I'
-        },
-        {
-          flightNumber: 'QR672',
-          airline: 'Qatar Airways',
-          origin: 'DOH',
-          destination: 'MLE',
-          scheduledArrival: '16:15',
-          status: 'ON TIME',
-          terminal: 'I'
-        },
-        {
-          flightNumber: 'UL101',
-          airline: 'SriLankan',
-          origin: 'CMB',
-          destination: 'MLE',
-          scheduledArrival: '16:45',
-          status: 'EN ROUTE',
-          terminal: 'I'
-        },
-        {
-          flightNumber: 'EY278',
-          airline: 'Etihad',
-          origin: 'AUH',
-          destination: 'MLE',
-          scheduledArrival: '17:20',
-          status: 'DELAYED',
-          terminal: 'I'
-        },
-        {
-          flightNumber: 'SQ438',
-          airline: 'Singapore Airlines',
-          origin: 'SIN',
-          destination: 'MLE',
-          scheduledArrival: '18:05',
-          status: 'ON TIME',
-          terminal: 'I'
-        },
-        {
-          flightNumber: 'TK730',
-          airline: 'Turkish Airlines',
-          origin: 'IST',
-          destination: 'MLE',
-          scheduledArrival: '18:40',
-          status: 'ON TIME',
-          terminal: 'I'
-        },
-        {
-          flightNumber: 'BA061',
-          airline: 'British Airways',
-          origin: 'LHR',
-          destination: 'MLE',
-          scheduledArrival: '19:15',
-          status: 'EN ROUTE',
-          terminal: 'I'
-        },
-        {
-          flightNumber: 'AF222',
-          airline: 'Air France',
-          origin: 'CDG',
-          destination: 'MLE',
-          scheduledArrival: '20:00',
-          status: 'ON TIME',
-          terminal: 'I'
-        }
-      ];
+      const clientId = process.env.AMADEUS_CLIENT_ID;
+      const clientSecret = process.env.AMADEUS_CLIENT_SECRET;
 
-      // Shuffle or filter to make it look "live"
-      setFlights(mockFlights.slice(0, limit));
+      if (!clientId || !clientSecret) {
+        throw new Error('Amadeus credentials not configured.');
+      }
+
+      // 1. Get Token
+      const authRes = await fetch('https://test.api.amadeus.com/v1/security/oauth2/token', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: new URLSearchParams({
+          grant_type: 'client_credentials',
+          client_id: clientId,
+          client_secret: clientSecret,
+        })
+      });
+      const authData = await authRes.json();
+      const token = authData.access_token;
+
+      // 2. Fetch flights from major hubs to MLE for today
+      // Using a few major origins to simulate an arrivals board
+      const origins = ['DXB', 'DOH', 'CMB', 'SIN', 'IST'];
+      const today = new Date().toISOString().split('T')[0];
+      
+      const flightPromises = origins.map(origin => 
+        fetch(`https://test.api.amadeus.com/v2/shopping/flight-offers?originLocationCode=${origin}&destinationLocationCode=MLE&departureDate=${today}&adults=1&max=3&currencyCode=USD`, {
+          headers: { Authorization: `Bearer ${token}` }
+        }).then(res => res.json())
+      );
+
+      const results = await Promise.all(flightPromises);
+      
+      const allFlights: FlightStatus[] = [];
+      const carriers = results[0]?.dictionaries?.carriers || {};
+
+      results.forEach((res, idx) => {
+        if (res.data && res.data.length > 0) {
+          res.data.forEach((offer: any) => {
+            const segment = offer.itineraries[0].segments[offer.itineraries[0].segments.length - 1];
+            const arrivalTime = new Date(segment.arrival.at);
+            const now = new Date();
+            
+            // Determine a "Status" based on time for demonstration
+            let status: FlightStatus['status'] = 'ON TIME';
+            if (arrivalTime < now) status = 'LANDED';
+            else if (Math.random() > 0.8) status = 'DELAYED';
+            else if (idx % 3 === 0) status = 'EN ROUTE';
+
+            allFlights.push({
+              flightNumber: `${segment.carrierCode}${segment.number}`,
+              airline: carriers[segment.carrierCode] || segment.carrierCode,
+              origin: segment.departure.iataCode,
+              destination: 'MLE',
+              scheduledArrival: arrivalTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false }),
+              status: status,
+              terminal: segment.arrival.terminal || 'I'
+            });
+          });
+        }
+      });
+
+      // Sort by arrival time
+      allFlights.sort((a, b) => a.scheduledArrival.localeCompare(b.scheduledArrival));
+
+      if (allFlights.length === 0) {
+        throw new Error('No live flights found for today.');
+      }
+
+      setFlights(allFlights.slice(0, limit));
       setLastUpdated(new Date());
     } catch (err) {
-      setError('Unable to sync with global flight data.');
+      console.error('Flight board error:', err);
+      setError('Unable to sync with live Amadeus feed.');
     } finally {
       setLoading(false);
     }
