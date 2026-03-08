@@ -57,6 +57,16 @@ async function startServer() {
     res.send('OK');
   });
 
+  app.get('/api/debug', (req, res) => {
+    res.json({
+      status: 'online',
+      nodeEnv: process.env.NODE_ENV || 'development',
+      amadeusConfigured: !!(process.env.AMADEUS_CLIENT_ID && process.env.AMADEUS_CLIENT_SECRET),
+      amadeusClientIdPrefix: process.env.AMADEUS_CLIENT_ID ? process.env.AMADEUS_CLIENT_ID.substring(0, 4) : 'none',
+      timestamp: new Date().toISOString()
+    });
+  });
+
   app.use(cookieSession({
     name: 'session',
     keys: [process.env.SESSION_SECRET || 'serenity-secret'],
@@ -133,6 +143,11 @@ async function startServer() {
     }
   });
 
+  // 404 for unmatched API routes
+  app.use('/api', (req, res) => {
+    res.status(404).json({ error: 'API route not found' });
+  });
+
   app.get('/robots.txt', (req, res) => {
     const filePath = process.env.NODE_ENV === 'production' 
       ? path.join(__dirname, 'dist', 'robots.txt')
@@ -189,11 +204,6 @@ async function startServer() {
           return next();
         }
         res.sendFile(path.join(__dirname, 'dist', 'index.html'));
-      });
-
-      // 404 for unmatched API routes
-      app.use('/api', (req, res) => {
-        res.status(404).json({ error: 'API route not found' });
       });
     }
 
