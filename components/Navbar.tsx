@@ -43,6 +43,7 @@ const Navbar: React.FC = () => {
   const travelLinks = [
     { name: t('stays'), path: '/stays' },
     { name: 'Flights', path: '/flights' },
+    { name: 'Flight Board', path: '/flight-board' },
     { name: t('experiences'), path: '/experiences' },
     { name: t('offers'), path: '/offers' },
   ];
