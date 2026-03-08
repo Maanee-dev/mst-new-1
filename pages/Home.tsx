@@ -6,7 +6,7 @@ import { Accommodation, BlogPost } from '../types';
 import { BLOG_POSTS, RESORTS } from '../constants';
 import ResortCard from '../components/ResortCard';
 import SEO from '../components/SEO';
-import InstagramFeed from '../components/InstagramFeed';
+import MaldivesGallery from '../components/MaldivesGallery';
 import { useBag } from '../context/BagContext';
 
 const Home: React.FC = () => {
@@ -446,8 +446,8 @@ const Home: React.FC = () => {
         </div>
       </section>
 
-      {/* Instagram Feed */}
-      <InstagramFeed />
+      {/* Maldives Gallery */}
+      <MaldivesGallery />
 
       {/* FINAL CTA */}
       <section className="py-24 md:py-32 lg:py-48 bg-slate-950 relative overflow-hidden text-center text-white">

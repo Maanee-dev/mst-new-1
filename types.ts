@@ -52,6 +52,7 @@ export interface Accommodation {
   mealPlans: MealPlan[];
   uvp: string;
   isFeatured?: boolean;
+  coordinates?: { lat: number; lng: number };
   roomTypes?: RoomType[];
   diningVenues?: DiningVenue[];
   seoTitle?: string;
