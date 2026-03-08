@@ -135,50 +135,50 @@ async function startServer() {
   });
 
     if (process.env.NODE_ENV !== 'production') {
-    const vite = await createViteServer({
-      server: { middlewareMode: true },
-      appType: 'custom',
+      const vite = await createViteServer({
+        server: { middlewareMode: true },
+        appType: 'spa',
+      });
+      console.log('Vite dev server created');
+      app.use(vite.middlewares);
+
+      app.get('*', async (req, res, next) => {
+        const url = req.originalUrl;
+        console.log(`Handling request for: ${url}`);
+
+        // Skip API and Auth routes
+        if (url.startsWith('/api') || url.startsWith('/auth') || url.startsWith('/health')) {
+          return next();
+        }
+
+        // Skip files with extensions (likely handled by vite.middlewares or missing)
+        if (path.extname(url)) {
+          return next();
+        }
+
+        try {
+          const indexPath = path.resolve(__dirname, 'index.html');
+          console.log(`Reading index.html from: ${indexPath}`);
+          let template = fs.readFileSync(indexPath, 'utf-8');
+          template = await vite.transformIndexHtml(url, template);
+          res.status(200).set({ 'Content-Type': 'text/html' }).end(template);
+        } catch (e) {
+          console.error('SPA Catch-all Error:', e);
+          vite.ssrFixStacktrace(e as Error);
+          next(e);
+        }
+      });
+    } else {
+      app.use(express.static(path.join(__dirname, 'dist')));
+      app.get('*', (req, res) => {
+        res.sendFile(path.join(__dirname, 'dist', 'index.html'));
+      });
+    }
+
+    app.listen(PORT, '0.0.0.0', () => {
+      console.log(`Server running on port ${PORT}`);
     });
-    console.log('Vite dev server created');
-    app.use(vite.middlewares);
-
-    app.get('*', async (req, res, next) => {
-      const url = req.originalUrl;
-      console.log(`Handling request for: ${url}`);
-
-      // Skip API and Auth routes
-      if (url.startsWith('/api') || url.startsWith('/auth')) {
-        return next();
-      }
-
-      // Skip files with extensions (likely handled by vite.middlewares or missing)
-      if (path.extname(url)) {
-        return next();
-      }
-
-      try {
-        const indexPath = path.resolve(__dirname, 'index.html');
-        console.log(`Reading index.html from: ${indexPath}`);
-        let template = fs.readFileSync(indexPath, 'utf-8');
-        template = await vite.transformIndexHtml(url, template);
-        res.status(200).set({ 'Content-Type': 'text/html' }).end(template);
-      } catch (e) {
-        console.error('SPA Catch-all Error:', e);
-        vite.ssrFixStacktrace(e as Error);
-        next(e);
-      }
-    });
-  } else {
-    app.use(express.static(path.join(__dirname, 'dist')));
-    app.get('*', (req, res) => {
-      res.sendFile(path.join(__dirname, 'dist', 'index.html'));
-    });
-  }
-
-  app.listen(PORT, '0.0.0.0', () => {
-    console.log(`Server running on port ${PORT}`);
-  });
-} catch (error) {
+  } catch (error) {
     console.error('Failed to start server:', error);
   }
 }
