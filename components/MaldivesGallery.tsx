@@ -81,14 +81,15 @@ const MaldivesGallery: React.FC = () => {
 
   const GalleryRow: React.FC<{ rowImages: GalleryImage[]; direction: 'left' | 'right'; speed?: number }> = ({ rowImages, direction, speed = 40 }) => {
     if (rowImages.length === 0) return null;
-    const duplicatedImages = [...rowImages, ...rowImages, ...rowImages]; // Triple for smooth looping
+    // Use 2 sets for a perfect loop with 50% translation
+    const duplicatedImages = [...rowImages, ...rowImages];
 
     return (
       <div className="flex overflow-hidden py-4">
         <motion.div
           className="flex gap-6 px-3"
           animate={{
-            x: direction === 'left' ? [0, -100 * rowImages.length] : [-100 * rowImages.length, 0],
+            x: direction === 'left' ? ["0%", "-50%"] : ["-50%", "0%"],
           }}
           transition={{
             duration: speed,
@@ -158,8 +159,8 @@ const MaldivesGallery: React.FC = () => {
         {/* Fact Marquee */}
         <div className="py-12 bg-slate-50 dark:bg-slate-900/30 border-y border-slate-100 dark:border-white/5 overflow-hidden">
           <motion.div
-            className="flex gap-24 whitespace-nowrap"
-            animate={{ x: [0, -2000] }}
+            className="flex gap-24 whitespace-nowrap px-12"
+            animate={{ x: ["0%", "-50%"] }}
             transition={{ duration: 120, repeat: Infinity, ease: "linear" }}
           >
             {[...maldivesFacts, ...maldivesFacts].map((fact, i) => (
