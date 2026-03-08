@@ -36,13 +36,18 @@ export default function InstagramFeed() {
   const checkStatus = async () => {
     try {
       const res = await fetch('/api/auth/instagram/status');
+      if (!res.ok) {
+        setIsConnected(false);
+        return;
+      }
       const data = await res.json();
       setIsConnected(data.connected);
       if (data.connected) {
         fetchFeed();
       }
     } catch (err) {
-      console.error('Status check failed', err);
+      console.error('Status check failed - backend might be missing', err);
+      setIsConnected(false);
     }
   };
 
