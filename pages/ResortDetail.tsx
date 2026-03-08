@@ -64,42 +64,8 @@ const ResortDetail: React.FC = () => {
     notes: ''
   });
 
-  const [otaPrices, setOtaPrices] = useState<any>(null);
-  const [otaLoading, setOtaLoading] = useState(false);
-  const [otaError, setOtaError] = useState<string | null>(null);
-
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const { addItem, isInBag } = useBag();
-
-  const fetchOtaPrices = async () => {
-    if (!resort) return;
-    setOtaLoading(true);
-    setOtaError(null);
-    try {
-      const params = new URLSearchParams({
-        resortName: resort.name,
-        checkIn: quoteData.checkIn || '',
-        checkOut: quoteData.checkOut || ''
-      });
-      const res = await fetch(`/api/ota/prices?${params}`);
-      if (!res.ok) {
-        const errData = await res.json();
-        throw new Error(errData.details || 'Failed to fetch prices');
-      }
-      const data = await res.json();
-      setOtaPrices(data);
-    } catch (err: any) {
-      setOtaError(err.message);
-    } finally {
-      setOtaLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    if (resort && quoteData.checkIn && quoteData.checkOut) {
-      fetchOtaPrices();
-    }
-  }, [resort, quoteData.checkIn, quoteData.checkOut]);
 
   useEffect(() => {
     const saved = localStorage.getItem(INQUIRY_STORAGE_KEY);
@@ -804,74 +770,6 @@ const ResortDetail: React.FC = () => {
           </div>
         </section>
       )}
-
-      {/* Live Market Rates Section */}
-      <section className="py-12 md:py-24 bg-slate-50 dark:bg-slate-900/20 border-y-[1px] border-slate-100 dark:border-white/5 transition-colors">
-        <div className="max-w-[1440px] mx-auto px-6 lg:px-12">
-          <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-10 mb-16 reveal">
-            <div className="max-w-2xl">
-              <span className="text-[11px] font-black text-sky-500 uppercase tracking-[1em] mb-4 md:mb-8 block">Market Intelligence</span>
-              <h3 className="text-3xl md:text-3xl lg:text-5xl font-serif font-bold text-slate-950 dark:text-white tracking-tighter transition-colors">Live OTA Rates.</h3>
-            </div>
-            <div className="max-w-xs">
-              <p className="text-slate-400 dark:text-slate-600 text-[10px] font-black uppercase tracking-[0.4em] leading-loose">
-                Real-time pricing data from global distribution systems to ensure you get the best bespoke value.
-              </p>
-            </div>
-          </div>
-
-          <div className="bg-white dark:bg-slate-900 rounded-[3rem] p-8 md:p-16 shadow-sm border-[1px] border-slate-100 dark:border-white/5 transition-colors">
-            {!quoteData.checkIn || !quoteData.checkOut ? (
-              <div className="text-center py-12">
-                <p className="text-slate-400 font-serif text-xl italic mb-8">Select dates in the inquiry form below to fetch live market rates.</p>
-                <button 
-                  onClick={() => document.getElementById('inquiry-form')?.scrollIntoView({ behavior: 'smooth' })}
-                  className="text-[10px] font-black text-sky-500 uppercase tracking-[0.4em] border-b border-sky-500/30 pb-2 hover:border-sky-500 transition-all"
-                >
-                  Go to Inquiry Form
-                </button>
-              </div>
-            ) : otaLoading ? (
-              <div className="flex flex-col items-center justify-center py-20">
-                <div className="w-12 h-12 border-2 border-sky-500 border-t-transparent rounded-full animate-spin mb-8"></div>
-                <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.4em]">Querying Global Distribution Systems...</p>
-              </div>
-            ) : otaError ? (
-              <div className="text-center py-12">
-                <p className="text-red-500 font-bold text-sm uppercase tracking-widest mb-4">Live Price Feed Unavailable</p>
-                <p className="text-slate-400 text-sm mb-8">{otaError}</p>
-                <button 
-                  onClick={fetchOtaPrices}
-                  className="text-[10px] font-black text-sky-500 uppercase tracking-[0.4em] border-b border-sky-500/30 pb-2 hover:border-sky-500 transition-all"
-                >
-                  Retry Connection
-                </button>
-              </div>
-            ) : otaPrices && otaPrices.offers.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                {otaPrices.offers.map((offer: any, idx: number) => (
-                  <div key={idx} className="p-8 rounded-[2rem] bg-slate-50 dark:bg-slate-950/50 border border-slate-100 dark:border-white/5 group hover:border-sky-500/30 transition-all duration-500">
-                    <div className="flex justify-between items-start mb-6">
-                      <span className="text-[9px] font-black text-sky-500 uppercase tracking-widest px-3 py-1 bg-sky-50 dark:bg-sky-950/30 rounded-full">{offer.provider}</span>
-                      <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{offer.currency}</span>
-                    </div>
-                    <h4 className="text-2xl font-serif font-bold text-slate-900 dark:text-white mb-2">{offer.roomType || 'Standard Room'}</h4>
-                    <p className="text-slate-400 text-[10px] font-black uppercase tracking-widest mb-8">{offer.checkIn} — {offer.checkOut}</p>
-                    <div className="flex items-end gap-2">
-                      <span className="text-4xl font-serif font-bold text-slate-950 dark:text-white">{offer.price}</span>
-                      <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Total</span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div className="text-center py-12">
-                <p className="text-slate-400 font-serif text-xl italic">No live offers found for these dates. Our consultants can still provide bespoke rates.</p>
-              </div>
-            )}
-          </div>
-        </div>
-      </section>
 
       {/* Inquiry Form Section */}
       <section id="inquiry-form" className="py-20 md:py-32 lg:py-48 bg-slate-950 text-white relative overflow-hidden">

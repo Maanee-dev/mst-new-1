@@ -63,56 +63,62 @@ async function startServer() {
     httpOnly: true,
   }));
 
-  // OTA Prices Route (Amadeus)
-  app.get('/api/ota/prices', async (req, res) => {
-    const { resortName, checkIn, checkOut } = req.query;
+  // Flight Search Route (Amadeus)
+  app.get('/api/flights/search', async (req, res) => {
+    const { origin, destination, departureDate, returnDate, adults } = req.query;
     
-    if (!resortName) {
-      return res.status(400).json({ error: 'resortName is required' });
+    if (!origin || !destination || !departureDate) {
+      return res.status(400).json({ error: 'origin, destination, and departureDate are required' });
     }
 
     try {
       const token = await getAmadeusToken();
       
-      // 1. Search for Hotel ID by Name
-      const searchResponse = await axios.get(
-        `https://test.api.amadeus.com/v1/reference-data/locations/hotels/by-hotels?keyword=${encodeURIComponent(resortName as string)}&subType=HOTEL_GDS`,
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
+      // Amadeus Flight Offers Search v2
+      const params = new URLSearchParams({
+        originLocationCode: origin as string,
+        destinationLocationCode: destination as string,
+        departureDate: departureDate as string,
+        adults: (adults as string) || '1',
+        currencyCode: 'USD',
+        max: '10'
+      });
 
-      const hotel = searchResponse.data.data?.[0];
-      if (!hotel) {
-        return res.status(404).json({ error: 'Hotel not found in OTA database' });
+      if (returnDate) {
+        params.append('returnDate', returnDate as string);
       }
 
-      // 2. Get Hotel Offers
-      // Amadeus Hotel Search v3
-      const offersResponse = await axios.get(
-        `https://test.api.amadeus.com/v3/shopping/hotel-offers?hotelIds=${hotel.hotelId}&adults=2&checkInDate=${checkIn || ''}&checkOutDate=${checkOut || ''}&roomQuantity=1&paymentPolicy=NONE&bestRateOnly=true`,
+      const flightsResponse = await axios.get(
+        `https://test.api.amadeus.com/v2/shopping/flight-offers?${params.toString()}`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
-      const offers = offersResponse.data.data?.[0]?.offers || [];
-      
-      res.json({
-        hotelId: hotel.hotelId,
-        name: hotel.name,
-        offers: offers.map((o: any) => ({
-          id: o.id,
-          checkIn: o.checkInDate,
-          checkOut: o.checkOutDate,
-          roomType: o.room?.typeEstimated?.category,
-          price: o.price?.total,
-          currency: o.price?.currency,
-          provider: 'Amadeus GDS'
-        }))
-      });
+      res.json(flightsResponse.data);
     } catch (error: any) {
-      console.error('OTA API Error:', error.response?.data || error.message);
+      const errorData = error.response?.data;
+      const errorMessage = errorData?.errors?.[0]?.detail || errorData?.message || error.message;
+      console.error('Flight API Error:', errorData || error.message);
       res.status(500).json({ 
-        error: 'Failed to fetch live OTA prices', 
-        details: error.response?.data?.errors?.[0]?.detail || error.message 
+        error: 'Failed to fetch live flight offers', 
+        details: errorMessage 
       });
+    }
+  });
+
+  // IATA City/Airport Search
+  app.get('/api/flights/locations', async (req, res) => {
+    const { keyword } = req.query;
+    if (!keyword) return res.json([]);
+
+    try {
+      const token = await getAmadeusToken();
+      const response = await axios.get(
+        `https://test.api.amadeus.com/v1/reference-data/locations?subType=CITY,AIRPORT&keyword=${keyword}`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      res.json(response.data.data);
+    } catch (error: any) {
+      res.status(500).json({ error: 'Failed to fetch locations' });
     }
   });
 
@@ -138,7 +144,7 @@ async function startServer() {
       console.log('Vite dev server created');
       app.use(vite.middlewares);
 
-      app.get('*', async (req, res, next) => {
+      app.get('*any', async (req, res, next) => {
         const url = req.originalUrl;
         console.log(`Handling request for: ${url}`);
 
@@ -166,7 +172,7 @@ async function startServer() {
       });
     } else {
       app.use(express.static(path.join(__dirname, 'dist')));
-      app.get('*', (req, res) => {
+      app.get('*any', (req, res) => {
         res.sendFile(path.join(__dirname, 'dist', 'index.html'));
       });
     }

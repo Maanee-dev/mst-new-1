@@ -42,6 +42,7 @@ const Navbar: React.FC = () => {
 
   const navLinks = [
     { name: t('stays'), path: '/stays' },
+    { name: 'Flights', path: '/flights' },
     { name: t('offers'), path: '/offers' },
     { name: t('experiences'), path: '/experiences' },
     { name: t('stories'), path: '/stories' },
