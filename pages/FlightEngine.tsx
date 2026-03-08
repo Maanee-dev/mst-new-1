@@ -47,6 +47,10 @@ const FlightEngine: React.FC = () => {
     if (keyword.length < 2) return;
     try {
       const res = await fetch(`/api/flights/locations?keyword=${keyword}`);
+      const contentType = res.headers.get('content-type');
+      if (!contentType || !contentType.includes('application/json')) {
+        return;
+      }
       const data = await res.json();
       if (type === 'origin') setOriginSuggestions(data);
       else setDestSuggestions(data);
@@ -72,6 +76,14 @@ const FlightEngine: React.FC = () => {
       if (tripType === 'round-trip' && returnDate) params.append('returnDate', returnDate);
 
       const res = await fetch(`/api/flights/search?${params.toString()}`);
+      
+      const contentType = res.headers.get('content-type');
+      if (!contentType || !contentType.includes('application/json')) {
+        const text = await res.text();
+        console.error('Non-JSON response received:', text.substring(0, 200));
+        throw new Error('The server returned an invalid response (HTML instead of JSON). This usually means the backend server is not running or the API route is not configured correctly on your host.');
+      }
+
       const data = await res.json();
       
       if (!res.ok) {

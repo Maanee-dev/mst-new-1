@@ -23,8 +23,11 @@ async function getAmadeusToken() {
   const clientSecret = process.env.AMADEUS_CLIENT_SECRET;
 
   if (!clientId || !clientSecret) {
+    console.error('[Amadeus] Missing credentials. AMADEUS_CLIENT_ID or AMADEUS_CLIENT_SECRET not set.');
     throw new Error('Amadeus credentials not configured');
   }
+
+  console.log(`[Amadeus] Fetching token with ID: ${clientId.substring(0, 4)}...`);
 
   const response = await axios.post(
     'https://test.api.amadeus.com/v1/security/oauth2/token',
@@ -62,6 +65,14 @@ async function startServer() {
     sameSite: 'none',
     httpOnly: true,
   }));
+
+  // API Request Logger
+  app.use((req, res, next) => {
+    if (req.path.startsWith('/api')) {
+      console.log(`[API] ${req.method} ${req.path}`);
+    }
+    next();
+  });
 
   // Flight Search Route (Amadeus)
   app.get('/api/flights/search', async (req, res) => {
@@ -144,10 +155,9 @@ async function startServer() {
       console.log('Vite dev server created');
       app.use(vite.middlewares);
 
-      app.get('*any', async (req, res, next) => {
+      app.get('*', async (req, res, next) => {
         const url = req.originalUrl;
-        console.log(`Handling request for: ${url}`);
-
+        
         // Skip API and Auth routes
         if (url.startsWith('/api') || url.startsWith('/auth') || url.startsWith('/health')) {
           return next();
@@ -172,8 +182,18 @@ async function startServer() {
       });
     } else {
       app.use(express.static(path.join(__dirname, 'dist')));
-      app.get('*any', (req, res) => {
+      
+      // Handle SPA fallback but EXCLUDE API routes
+      app.get('*', (req, res, next) => {
+        if (req.path.startsWith('/api') || req.path.startsWith('/auth') || req.path.startsWith('/health')) {
+          return next();
+        }
         res.sendFile(path.join(__dirname, 'dist', 'index.html'));
+      });
+
+      // 404 for unmatched API routes
+      app.use('/api', (req, res) => {
+        res.status(404).json({ error: 'API route not found' });
       });
     }
 
