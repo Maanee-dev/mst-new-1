@@ -93,19 +93,6 @@ const Navbar: React.FC = () => {
                 {t('discover')}
               </span>
             </button>
-
-            {/* Quick Links (Desktop) */}
-            <div className={`hidden xl:flex items-center gap-8 transition-all duration-1000 ${isOpen ? 'opacity-0 -translate-x-8 pointer-events-none' : 'opacity-100 translate-x-0'}`}>
-              <Link to="/stays" className={`text-[9px] font-black uppercase tracking-[0.4em] ${elementColorClass} ${elementShadowClass} hover:text-sky-500 dark:hover:text-sky-400 transition-colors`}>
-                {t('stays')}
-              </Link>
-              <Link to="/flights" className={`text-[9px] font-black uppercase tracking-[0.4em] ${elementColorClass} ${elementShadowClass} hover:text-sky-500 dark:hover:text-sky-400 transition-colors`}>
-                Flights
-              </Link>
-              <Link to="/offers" className={`text-[9px] font-black uppercase tracking-[0.4em] ${elementColorClass} ${elementShadowClass} hover:text-sky-500 dark:hover:text-sky-400 transition-colors`}>
-                {t('offers')}
-              </Link>
-            </div>
           </div>
 
           {/* Center: Brand Identity Logo */}

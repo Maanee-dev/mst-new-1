@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { X, Heart, ShoppingBag, User, Trash2, LogOut, Mail, Lock, Chrome, Star, Gift, Shield } from 'lucide-react';
+import { X, Heart, ShoppingBag, User, Trash2, LogOut, Mail, Lock, Chrome, Star, Gift, Shield, AlertTriangle, Calendar } from 'lucide-react';
 import { useBag } from '../context/BagContext';
 import { supabase } from '../lib/supabase';
 
@@ -458,6 +458,33 @@ const UserPanel: React.FC = () => {
                       <span className="text-[10px] font-bold text-slate-400">{items.length} items</span>
                     </div>
 
+                    {items.length > 0 && (
+                      <div className="mb-6 p-4 bg-slate-50 dark:bg-white/5 rounded-2xl border border-slate-100 dark:border-white/5">
+                        <h4 className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-3">Trip Integrity</h4>
+                        {(() => {
+                          const flights = items.filter(i => i.type === 'flight');
+                          const stays = items.filter(i => i.type === 'resort');
+                          
+                          if (flights.length > 0 && stays.length > 0) {
+                            const firstFlight = flights[0];
+                            const firstStay = stays[0];
+                            
+                            if (firstFlight.startDate && firstStay.startDate && firstFlight.startDate !== firstStay.startDate) {
+                              return (
+                                <div className="flex items-start gap-3 text-amber-600 dark:text-amber-400">
+                                  <AlertTriangle size={14} className="mt-0.5 flex-shrink-0" />
+                                  <p className="text-[10px] font-bold leading-relaxed">
+                                    Flight arrives on {firstFlight.startDate} but stay begins on {firstStay.startDate}. Please verify your itinerary.
+                                  </p>
+                                </div>
+                              );
+                            }
+                          }
+                          return <p className="text-[10px] text-slate-400 italic">Itinerary dates are synchronized.</p>;
+                        })()}
+                      </div>
+                    )}
+
                     {items.length === 0 ? (
                       <div className="py-8 text-center border border-dashed border-slate-200 dark:border-white/10 rounded-xl">
                         <p className="text-xs text-slate-400">Your bucket is empty.</p>
@@ -475,7 +502,15 @@ const UserPanel: React.FC = () => {
                             </div>
                             <div className="flex-1 min-w-0">
                               <h4 className="text-sm font-bold text-slate-900 dark:text-white truncate">{item.name}</h4>
-                              <p className="text-[10px] text-slate-500 uppercase tracking-wider">{item.type.replace('_', ' ')}</p>
+                              <div className="flex items-center justify-between">
+                                <p className="text-[10px] text-slate-500 uppercase tracking-wider">{item.type.replace('_', ' ')}</p>
+                                {item.startDate && (
+                                  <div className="flex items-center gap-1 text-[9px] font-bold text-sky-500">
+                                    <Calendar size={10} />
+                                    <span>{item.startDate}{item.endDate ? ` - ${item.endDate}` : ''}</span>
+                                  </div>
+                                )}
+                              </div>
                             </div>
                             <button 
                               onClick={() => removeItem(item.id)}
