@@ -43,17 +43,40 @@ const FlightEngine: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // Client-side Amadeus Auth (Warning: Exposes credentials in browser)
+  const getAmadeusToken = async () => {
+    const clientId = process.env.AMADEUS_CLIENT_ID;
+    const clientSecret = process.env.AMADEUS_CLIENT_SECRET;
+
+    if (!clientId || !clientSecret) {
+      throw new Error('Amadeus credentials not configured in environment variables.');
+    }
+
+    const res = await fetch('https://test.api.amadeus.com/v1/security/oauth2/token', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams({
+        grant_type: 'client_credentials',
+        client_id: clientId,
+        client_secret: clientSecret,
+      })
+    });
+
+    if (!res.ok) throw new Error('Failed to authenticate with Amadeus API');
+    const data = await res.json();
+    return data.access_token;
+  };
+
   const searchLocations = async (keyword: string, type: 'origin' | 'dest') => {
     if (keyword.length < 2) return;
     try {
-      const res = await fetch(`/api/flights/locations?keyword=${keyword}`);
-      const contentType = res.headers.get('content-type');
-      if (!contentType || !contentType.includes('application/json')) {
-        return;
-      }
+      const token = await getAmadeusToken();
+      const res = await fetch(`https://test.api.amadeus.com/v1/reference-data/locations?subType=CITY,AIRPORT&keyword=${keyword}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
       const data = await res.json();
-      if (type === 'origin') setOriginSuggestions(data);
-      else setDestSuggestions(data);
+      if (type === 'origin') setOriginSuggestions(data.data || []);
+      else setDestSuggestions(data.data || []);
     } catch (err) {
       console.error('Location search error:', err);
     }
@@ -66,28 +89,25 @@ const FlightEngine: React.FC = () => {
     setFlights([]);
 
     try {
+      const token = await getAmadeusToken();
       const params = new URLSearchParams({
-        origin,
-        destination,
+        originLocationCode: origin,
+        destinationLocationCode: destination,
         departureDate,
         adults: adults.toString(),
-        children: children.toString()
+        currencyCode: 'USD',
+        max: '10'
       });
       if (tripType === 'round-trip' && returnDate) params.append('returnDate', returnDate);
 
-      const res = await fetch(`/api/flights/search?${params.toString()}`);
+      const res = await fetch(`https://test.api.amadeus.com/v2/shopping/flight-offers?${params.toString()}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
       
-      const contentType = res.headers.get('content-type');
-      if (!contentType || !contentType.includes('application/json')) {
-        const text = await res.text();
-        console.error('Non-JSON response received:', text.substring(0, 200));
-        throw new Error('The server returned an invalid response (HTML instead of JSON). This usually means the backend server is not running or the API route is not configured correctly on your host.');
-      }
-
       const data = await res.json();
       
       if (!res.ok) {
-        throw new Error(data.details || data.error || 'Failed to fetch flights');
+        throw new Error(data.errors?.[0]?.detail || data.error || 'Failed to fetch flights');
       }
       
       if (!data.data || data.data.length === 0) {
