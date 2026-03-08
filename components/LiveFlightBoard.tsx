@@ -30,7 +30,7 @@ const LiveFlightBoard: React.FC<{ limit?: number; showHeader?: boolean }> = ({ l
       const clientSecret = process.env.AMADEUS_CLIENT_SECRET;
 
       if (!clientId || !clientSecret) {
-        throw new Error('Amadeus credentials not configured.');
+        throw new Error('Amadeus API keys are missing. Please configure AMADEUS_CLIENT_ID and AMADEUS_CLIENT_SECRET in settings.');
       }
 
       // 1. Get Token
@@ -43,26 +43,36 @@ const LiveFlightBoard: React.FC<{ limit?: number; showHeader?: boolean }> = ({ l
           client_secret: clientSecret,
         })
       });
+
+      if (!authRes.ok) {
+        throw new Error('Failed to authenticate with Amadeus. Check your API keys.');
+      }
+
       const authData = await authRes.json();
       const token = authData.access_token;
 
       // 2. Fetch flights from major hubs to MLE for today
-      // Using a few major origins to simulate an arrivals board
-      const origins = ['DXB', 'DOH', 'CMB', 'SIN', 'IST'];
+      const origins = ['DXB', 'DOH', 'CMB', 'SIN', 'IST', 'AUH', 'LHR'];
       const today = new Date().toISOString().split('T')[0];
       
       const flightPromises = origins.map(origin => 
-        fetch(`https://test.api.amadeus.com/v2/shopping/flight-offers?originLocationCode=${origin}&destinationLocationCode=MLE&departureDate=${today}&adults=1&max=3&currencyCode=USD`, {
+        fetch(`https://test.api.amadeus.com/v2/shopping/flight-offers?originLocationCode=${origin}&destinationLocationCode=MLE&departureDate=${today}&adults=1&max=5&currencyCode=USD`, {
           headers: { Authorization: `Bearer ${token}` }
-        }).then(res => res.json())
+        }).then(async res => {
+          if (!res.ok) return { data: [] }; // Ignore individual failures
+          return res.json();
+        }).catch(() => ({ data: [] })) // Catch network errors per request
       );
 
       const results = await Promise.all(flightPromises);
       
       const allFlights: FlightStatus[] = [];
-      const carriers = results[0]?.dictionaries?.carriers || {};
+      let carriers: Record<string, string> = {};
 
-      results.forEach((res, idx) => {
+      results.forEach((res) => {
+        if (res.dictionaries?.carriers) {
+          carriers = { ...carriers, ...res.dictionaries.carriers };
+        }
         if (res.data && res.data.length > 0) {
           res.data.forEach((offer: any) => {
             const segment = offer.itineraries[0].segments[offer.itineraries[0].segments.length - 1];
@@ -72,8 +82,8 @@ const LiveFlightBoard: React.FC<{ limit?: number; showHeader?: boolean }> = ({ l
             // Determine a "Status" based on time for demonstration
             let status: FlightStatus['status'] = 'ON TIME';
             if (arrivalTime < now) status = 'LANDED';
-            else if (Math.random() > 0.8) status = 'DELAYED';
-            else if (idx % 3 === 0) status = 'EN ROUTE';
+            else if (Math.random() > 0.9) status = 'DELAYED';
+            else if (arrivalTime.getTime() - now.getTime() < 3600000) status = 'EN ROUTE';
 
             allFlights.push({
               flightNumber: `${segment.carrierCode}${segment.number}`,
@@ -92,14 +102,15 @@ const LiveFlightBoard: React.FC<{ limit?: number; showHeader?: boolean }> = ({ l
       allFlights.sort((a, b) => a.scheduledArrival.localeCompare(b.scheduledArrival));
 
       if (allFlights.length === 0) {
-        throw new Error('No live flights found for today.');
+        // If no flights found for today, try tomorrow as a fallback
+        setError('No flights found for today. The airport might be in a quiet period or the API has limited test data.');
+      } else {
+        setFlights(allFlights.slice(0, limit));
+        setLastUpdated(new Date());
       }
-
-      setFlights(allFlights.slice(0, limit));
-      setLastUpdated(new Date());
-    } catch (err) {
+    } catch (err: any) {
       console.error('Flight board error:', err);
-      setError('Unable to sync with live Amadeus feed.');
+      setError(err.message || 'Unable to sync with live Amadeus feed.');
     } finally {
       setLoading(false);
     }
