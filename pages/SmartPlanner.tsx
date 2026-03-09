@@ -71,10 +71,20 @@ const SmartPlanner: React.FC = () => {
     const delayDebounceFn = setTimeout(async () => {
       try {
         const res = await fetch(`/api/flights/locations?keyword=${searchCriteria.origin}`);
+        if (!res.ok) {
+          console.error(`[Planner] Location fetch failed: ${res.status}`);
+          return;
+        }
+        const contentType = res.headers.get('content-type');
+        if (!contentType || !contentType.includes('application/json')) {
+          const text = await res.text();
+          console.error('[Planner] Non-JSON location response:', text.substring(0, 100));
+          return;
+        }
         const data = await res.json();
         setLocationSuggestions(data);
       } catch (err) {
-        console.error('Location search error:', err);
+        console.error('[Planner] Location search error:', err);
       }
     }, 500);
     return () => clearTimeout(delayDebounceFn);
@@ -88,24 +98,54 @@ const SmartPlanner: React.FC = () => {
     setLoading(true);
     setError(null);
     try {
+      // Helper for safe JSON fetching
+      const safeFetchJson = async (url: string, errorMessage: string) => {
+        const res = await fetch(url);
+        if (!res.ok) {
+          const text = await res.text();
+          let details = '';
+          try {
+            const json = JSON.parse(text);
+            details = json.details || json.error || '';
+          } catch {
+            details = text.substring(0, 100);
+          }
+          throw new Error(`${errorMessage}${details ? `: ${details}` : ''}`);
+        }
+        const contentType = res.headers.get('content-type');
+        if (!contentType || !contentType.includes('application/json')) {
+          const text = await res.text();
+          console.error(`[Planner] Expected JSON from ${url}, got:`, text.substring(0, 100));
+          throw new Error(`${errorMessage}: Server returned an invalid format (HTML instead of JSON). This usually means the API route is not working correctly.`);
+        }
+        return await res.json();
+      };
+
       // 1. Search Flights
-      const flightRes = await fetch(`/api/flights/search?origin=${searchCriteria.origin}&destination=MLE&departureDate=${searchCriteria.departureDate}&returnDate=${searchCriteria.returnDate}&adults=${searchCriteria.adults}`);
-      const flightData = await flightRes.json();
+      const flightData = await safeFetchJson(
+        `/api/flights/search?origin=${searchCriteria.origin}&destination=MLE&departureDate=${searchCriteria.departureDate}&returnDate=${searchCriteria.returnDate}&adults=${searchCriteria.adults}`,
+        'Failed to fetch flight offers'
+      );
       if (flightData.error) throw new Error(flightData.details || flightData.error);
       setFlights(flightData.data || []);
 
       // 2. Search Hotels (MLE)
-      const hotelRes = await fetch(`/api/hotels/search?cityCode=MLE&checkInDate=${searchCriteria.departureDate}&checkOutDate=${searchCriteria.returnDate}&adults=${searchCriteria.adults}`);
-      const hotelData = await hotelRes.json();
+      const hotelData = await safeFetchJson(
+        `/api/hotels/search?cityCode=MLE&checkInDate=${searchCriteria.departureDate}&checkOutDate=${searchCriteria.returnDate}&adults=${searchCriteria.adults}`,
+        'Failed to fetch hotel offers'
+      );
       setHotels(hotelData.data || []);
 
       // 3. Search Activities (MLE Coordinates: 4.1755, 73.5093)
-      const activityRes = await fetch(`/api/activities/search?latitude=4.1755&longitude=73.5093`);
-      const activityData = await activityRes.json();
+      const activityData = await safeFetchJson(
+        `/api/activities/search?latitude=4.1755&longitude=73.5093`,
+        'Failed to fetch activities'
+      );
       setActivities(activityData.data || []);
 
       setStep(2);
     } catch (err: any) {
+      console.error('[Planner] Search error:', err);
       setError(err.message || 'Failed to fetch live data from Amadeus.');
     } finally {
       setLoading(false);
@@ -132,6 +172,7 @@ const SmartPlanner: React.FC = () => {
         })
       });
       
+      if (!res.ok) throw new Error('Failed to confirm itinerary');
       const data = await res.json();
       if (data.success) {
         setSubmitted(true);

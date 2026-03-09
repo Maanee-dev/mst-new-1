@@ -26,11 +26,14 @@ const LiveFlightBoard: React.FC<{ limit?: number; showHeader?: boolean }> = ({ l
     setLoading(true);
     setError(null);
     try {
-      const clientId = process.env.AMADEUS_CLIENT_ID;
-      const clientSecret = process.env.AMADEUS_CLIENT_SECRET;
+      // Client-side Amadeus Auth (Warning: Exposes credentials in browser)
+      // NOTE: In this environment, you have a Node.js backend already configured in server.ts.
+      // It is highly recommended to use the backend routes (/api/flights/search) instead of calling Amadeus directly from the frontend.
+      const clientId = import.meta.env.VITE_AMADEUS_CLIENT_ID;
+      const clientSecret = import.meta.env.VITE_AMADEUS_CLIENT_SECRET;
 
       if (!clientId || !clientSecret) {
-        throw new Error('Amadeus API keys are missing. Please configure AMADEUS_CLIENT_ID and AMADEUS_CLIENT_SECRET in settings.');
+        throw new Error('Amadeus API keys are missing. Please configure VITE_AMADEUS_CLIENT_ID and VITE_AMADEUS_CLIENT_SECRET in settings.');
       }
 
       // 1. Get Token

@@ -44,12 +44,14 @@ const FlightEngine: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
 
   // Client-side Amadeus Auth (Warning: Exposes credentials in browser)
+  // NOTE: In this environment, you have a Node.js backend already configured in server.ts.
+  // It is highly recommended to use the backend routes (/api/flights/search) instead of calling Amadeus directly from the frontend.
   const getAmadeusToken = async () => {
-    const clientId = process.env.AMADEUS_CLIENT_ID;
-    const clientSecret = process.env.AMADEUS_CLIENT_SECRET;
+    const clientId = import.meta.env.VITE_AMADEUS_CLIENT_ID;
+    const clientSecret = import.meta.env.VITE_AMADEUS_CLIENT_SECRET;
 
     if (!clientId || !clientSecret) {
-      throw new Error('Amadeus credentials not configured in environment variables.');
+      throw new Error('Amadeus credentials not configured in environment variables (VITE_AMADEUS_CLIENT_ID/SECRET).');
     }
 
     const res = await fetch('https://test.api.amadeus.com/v1/security/oauth2/token', {

@@ -122,6 +122,9 @@ const AdminFAQ: React.FC = () => {
         setHasApiKey(false);
         throw new Error("The API key was rejected. Verify your project settings.");
       }
+      if (err.message?.includes("quota") || err.message?.includes("429") || err.message?.includes("limit")) {
+        throw new Error("Quota limit exceeded. Please wait a moment or use a paid API key.");
+      }
       throw err;
     }
   };
@@ -179,12 +182,17 @@ const AdminFAQ: React.FC = () => {
           setHasApiKey(false);
           return;
         }
+        if (err.message.includes("Quota")) {
+          addLog("⏳ Rate limit hit. Pausing for 5 seconds...");
+          await new Promise(r => setTimeout(r, 5000));
+        }
       }
 
       tempResults.push(result);
       setResults([...tempResults]);
       setProgress(Math.round(((i + 1) / resorts.length) * 100));
-      await new Promise(r => setTimeout(r, 600));
+      // Increase delay to be safer with rate limits
+      await new Promise(r => setTimeout(r, 1500));
     }
 
     setIsProcessing(false);
@@ -217,9 +225,7 @@ const AdminFAQ: React.FC = () => {
                     <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div>
                     <span className="text-[9px] font-bold text-emerald-500 uppercase tracking-widest">Secure Link Active</span>
                   </div>
-                  {(process.env.API_KEY === 'undefined' || !process.env.API_KEY) && (
-                    <button onClick={handleSelectKey} className="text-[7px] font-black uppercase text-slate-500 hover:text-white transition-colors">Switch</button>
-                  )}
+                  <button onClick={handleSelectKey} className="text-[7px] font-black uppercase text-slate-500 hover:text-white transition-colors">Switch</button>
                 </div>
               )}
               <input type="password" value={serviceRoleKey} onChange={(e) => setServiceRoleKey(e.target.value)} placeholder="Supabase Service Role Key" className="w-full bg-black/40 border border-white/5 rounded-2xl px-6 py-4 text-xs font-mono text-sky-300 focus:ring-1 focus:ring-sky-500 outline-none" />
