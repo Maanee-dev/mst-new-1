@@ -29,8 +29,8 @@ const resources = {
         subtitle1: "PART 1 — DISCOVER THE ISLANDS",
         subtitle2: "PART 2 — PRIVATE STAYS",
         subtitle3: "PART 3 — RELAX IN STYLE",
-        title1: "Maldives Serenity",
-        title1Alt: "Travels",
+        title1: "Find Your",
+        title1Alt: "Paradise",
         title2: "Luxury",
         title2Alt: "Beach Villas",
         title3: "Relax on the",
@@ -159,8 +159,8 @@ const resources = {
         }
       },
       seo: {
-        homeTitle: "Maldives Serenity Travels | Luxury Maldives Resorts & Bespoke Holidays",
-        homeDesc: "Experience the ultimate luxury in the Maldives with Maldives Serenity Travels. We specialize in luxury Maldives holidays, overwater villas, private island resorts, and bespoke travel experiences.",
+        homeTitle: "Maldives Luxury Travel & Bespoke Holidays | Maldives Serenity Travels",
+        homeDesc: "Discover the ultimate Maldivian escape with Maldives Serenity Travels. We specialize in luxury Maldives holidays, overwater villas, private island resorts, and bespoke travel experiences. Book your dream vacation in the Indian Ocean today.",
         homeKeywords: "Maldives luxury travel, bespoke Maldives holidays, luxury resorts Maldives, overwater villas Maldives, Maldives travel agency, private island Maldives, Maldives honeymoon packages, luxury travel specialist Maldives, Maldives vacation planning, best resorts in Maldives, Maldives serenity travels",
         searchTitle: "Search results for \"{{query}}\" | Maldives Serenity Travels",
         searchDesc: "Unified discovery results for {{query}} across Maldivian resorts, offers, experiences, and editorial stories.",

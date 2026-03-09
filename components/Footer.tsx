@@ -15,8 +15,8 @@ const Footer: React.FC = () => {
         {/* Top Section: Branding & Newsletter */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-16 mb-32">
           <div className="lg:col-span-4">
-            <Link to="/" className="text-2xl md:text-3xl font-serif font-medium text-slate-900 dark:text-white tracking-[0.1em] uppercase block mb-8">
-              MALDIVES SERENITY TRAVELS
+            <Link to="/" className="text-3xl font-serif font-medium text-slate-900 dark:text-white tracking-[0.2em] uppercase block mb-8">
+              SERENITY
             </Link>
             <p className="text-slate-600 dark:text-slate-400 text-[10px] leading-[2.5] uppercase tracking-[0.3em] font-medium max-w-sm">
               {t('footer.branding')}

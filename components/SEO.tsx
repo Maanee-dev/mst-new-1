@@ -13,22 +13,23 @@ interface SEOProps {
 }
 
 const SEO: React.FC<SEOProps> = ({
-  title = "Maldives Serenity Travels | Luxury Maldives Resorts & Experiences",
-  description = "Discover the ultimate luxury in the Maldives with Maldives Serenity Travels. We offer curated resort stays, exclusive experiences, and personalized travel planning for your dream Maldivian getaway.",
-  keywords = "Maldives, luxury resorts, Maldives travel, Maldives serenity travels, Maldives vacation, honeymoon Maldives, private island Maldives, Maldives experiences",
+  title = "Maldives Serenity Travel | Luxury Maldives Resorts & Experiences",
+  description = "Discover the ultimate luxury in the Maldives with Maldives Serenity Travel. We offer curated resort stays, exclusive experiences, and personalized travel planning for your dream Maldivian getaway.",
+  keywords = "Maldives, luxury resorts, Maldives travel, Maldives serenity travel, Maldives vacation, honeymoon Maldives, private island Maldives, Maldives experiences",
   image = "https://maldives-serenitytravels.com/og-image.jpg",
   url = "https://maldives-serenitytravels.com",
   type = "website",
   schema
 }) => {
-  const siteName = "Maldives Serenity Travels";
+  const siteName = "Maldives Serenity Travel";
   const fullTitle = title.includes(siteName) ? title : `${title} | ${siteName}`;
 
   // Default JSON-LD for the business
   const defaultSchema = {
     "@context": "https://schema.org",
     "@type": "TravelAgency",
-    "name": "Maldives Serenity Travels",
+    "name": "Maldives Serenity Travel",
+    "alternateName": "Maldives Serenity Travels",
     "url": "https://maldives-serenitytravels.com",
     "logo": "https://maldives-serenitytravels.com/logo.png",
     "image": "https://maldives-serenitytravels.com/og-image.jpg",
