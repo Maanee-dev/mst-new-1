@@ -63,22 +63,22 @@ const Home: React.FC = () => {
 
   const heroSlides = [
     {
-      type: 'video',
-      src: 'https://maldives-serenitytravels.com/images/Villa Resorts - Brand Video - Reel 2 - 1080 x 1920.mp4',
+      type: 'image',
+      src: 'https://images.unsplash.com/photo-1505881502353-a1986add3732?auto=format&fit=crop&q=80&w=1920',
       title: t('hero.title1'),
       titleAlt: t('hero.title1Alt'),
       subtitle: t('hero.subtitle1')
     },
     {
       type: 'image',
-      src: 'https://maldives-serenitytravels.com/images/hero-image2',
+      src: 'https://images.unsplash.com/photo-1578922746465-3a805228b223?auto=format&fit=crop&q=80&w=1920',
       title: t('hero.title2'),
       titleAlt: t('hero.title2Alt'),
       subtitle: t('hero.subtitle2')
     },
     {
       type: 'image',
-      src: 'https://maldives-serenitytravels.com/images/hero-image-11.png',
+      src: 'https://images.unsplash.com/photo-1544550581-5f7ceaf7f992?auto=format&fit=crop&q=80&w=1920',
       title: t('hero.title3'),
       titleAlt: t('hero.title3Alt'),
       subtitle: t('hero.subtitle3')
@@ -278,9 +278,9 @@ const Home: React.FC = () => {
             <div className="lg:w-1/2 relative order-2 lg:order-1 reveal">
               <div className="relative aspect-[4/5] rounded-[3rem] overflow-hidden shadow-2xl z-10 group bg-slate-100 dark:bg-slate-900">
                 <img 
-                  src="https://maldives-serenitytravels.com/images/Screenshot 2026-02-23 at 00.17.04.png" 
+                  src="https://images.unsplash.com/photo-1590523277543-a94d2e4eb00b?auto=format&fit=crop&q=80&w=1200" 
                   className="w-full h-full object-cover transition-transform duration-[8s] group-hover:scale-110" 
-                  alt="Beautiful Maldives" 
+                  alt="Maldives Resort Luxury" 
                 />
                 <div className="absolute inset-0 bg-black/5 group-hover:bg-transparent transition-colors"></div>
               </div>

@@ -104,7 +104,7 @@ const Navbar: React.FC = () => {
                 xmlns="http://www.w3.org/2000/svg"
                 viewBox="0 0 600 600"
                 preserveAspectRatio="xMidYMid meet"
-                className={`w-20 h-20 md:w-32 md:h-32 lg:w-48 lg:h-48 -my-6 md:-my-10 lg:-my-16 transition-all duration-1000 ${logoFillClass}`}
+                className={`w-16 h-16 md:w-24 md:h-24 lg:w-32 lg:h-32 -my-4 md:-my-6 lg:-my-10 transition-all duration-1000 ${logoFillClass}`}
                 aria-hidden="true"
               >
                 <g transform="translate(0.000000,600.000000) scale(0.100000,-0.100000)" stroke="none">
@@ -135,6 +135,10 @@ const Navbar: React.FC = () => {
                   <path d="M4250 2790 c0 -5 7 -10 15 -10 22 0 22 -155 -1 -164 -33 -13 0 -26 67 -26 l69 0 0 35 c0 40 -11 45 -25 13 -7 -14 -20 -22 -37 -23 l-28 -1 0 83 c0 49 4 83 10 83 6 0 10 5 10 10 0 6 -18 10 -40 10 -22 0 -40 -4 -40 -10z"/>
                 </g>
               </svg>
+              <div className="flex flex-col items-center -mt-2 md:-mt-4 lg:-mt-6">
+                <span className={`text-[10px] md:text-[12px] lg:text-[14px] font-serif font-bold uppercase tracking-[0.3em] ${elementColorClass}`}>Maldives Serenity</span>
+                <span className={`text-[7px] md:text-[8px] lg:text-[9px] font-sans font-black uppercase tracking-[0.8em] opacity-60 ${elementColorClass}`}>Travels</span>
+              </div>
             </div>
           </Link>
 
