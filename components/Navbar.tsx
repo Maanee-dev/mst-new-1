@@ -40,17 +40,23 @@ const Navbar: React.FC = () => {
   const toggleMenu = () => setIsOpen(!isOpen);
   const toggleBag = () => setIsBagOpen(!isBagOpen);
 
-  const navLinks = [
+  const travelLinks = [
     { name: t('stays'), path: '/stays' },
-    { name: t('offers'), path: '/offers' },
+    { name: 'Flights', path: '/flights' },
+    { name: 'Flight Board', path: '/flight-board' },
     { name: t('experiences'), path: '/experiences' },
+    { name: t('offers'), path: '/offers' },
+  ];
+
+  const journalLinks = [
     { name: t('stories'), path: '/stories' },
     { name: t('discovery'), path: '/discovery' },
   ];
 
-  const ctaLinks = [
-    { name: t('planTrip'), path: '/plan' },
-    { name: 'Inquire', path: '/inquire' },
+  const footerLinks = [
+    { name: t('aboutUs'), path: '/about' },
+    { name: t('contact'), path: '/contact' },
+    { name: t('faq'), path: '/faq' },
   ];
 
   const isHomePage = location.pathname === '/';
@@ -71,7 +77,7 @@ const Navbar: React.FC = () => {
         <div className="max-w-[1440px] mx-auto px-6 md:px-12 flex justify-between items-center relative">
           
           {/* Left: Discover Toggle (Ghost Style - Reactive Color) */}
-          <div className="flex-1 flex items-center">
+          <div className="flex-1 flex items-center gap-8 md:gap-12">
             <button 
               onClick={toggleMenu}
               className="group flex items-center gap-4 focus:outline-none relative z-[301]"
@@ -186,36 +192,82 @@ const Navbar: React.FC = () => {
       {/* Fullscreen Overlay Menu */}
       <div className={`fixed inset-0 z-[250] bg-white dark:bg-slate-950 transition-all duration-1000 ease-[cubic-bezier(0.19,1,0.22,1)] ${isOpen ? 'translate-y-0 opacity-100' : '-translate-y-full opacity-0 pointer-events-none'}`}>
         <div className="h-full w-full overflow-y-auto no-scrollbar scroll-smooth flex flex-col bg-parchment dark:bg-slate-950">
-          <div className="m-auto flex flex-col items-center justify-center px-6 md:px-12 lg:px-24 pt-32 pb-24 text-center w-full min-h-max">
-            <div className="flex flex-col items-center justify-center space-y-2 md:space-y-4 lg:space-y-2 w-full">
-              {navLinks.map((link, i) => (
-                <div key={link.name} className="overflow-hidden py-1 md:py-2">
-                  <Link 
-                    to={link.path}
-                    style={{ transitionDelay: `${150 + i * 80}ms` }}
-                    className={`block text-3xl sm:text-4xl md:text-5xl lg:text-[5rem] font-serif font-medium text-slate-900 dark:text-white hover:text-sky-500 dark:hover:text-sky-400 transition-all duration-700 transform leading-tight ${isOpen ? 'translate-y-0' : 'translate-y-full'}`}
-                  >
-                    {link.name}.
-                  </Link>
+          <div className="m-auto flex flex-col items-center justify-center px-6 md:px-12 lg:px-24 pt-40 pb-24 w-full min-h-max">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 lg:gap-32 w-full max-w-6xl">
+              {/* Travel Section */}
+              <div className="flex flex-col space-y-12">
+                <span className={`text-[10px] font-black text-sky-500 uppercase tracking-[0.5em] transition-all duration-1000 delay-300 ${isOpen ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
+                  The Collection
+                </span>
+                <div className="flex flex-col space-y-4">
+                  {travelLinks.map((link, i) => (
+                    <div key={link.name} className="overflow-hidden py-1">
+                      <Link 
+                        to={link.path}
+                        style={{ transitionDelay: `${200 + i * 80}ms` }}
+                        className={`block text-4xl sm:text-5xl lg:text-7xl font-serif font-medium text-slate-900 dark:text-white hover:text-sky-500 dark:hover:text-sky-400 transition-all duration-700 transform leading-tight ${isOpen ? 'translate-y-0' : 'translate-y-full'}`}
+                      >
+                        {link.name}.
+                      </Link>
+                    </div>
+                  ))}
                 </div>
-              ))}
+              </div>
+
+              {/* Journal Section */}
+              <div className="flex flex-col space-y-12">
+                <div className="flex flex-col space-y-12">
+                  <span className={`text-[10px] font-black text-sky-500 uppercase tracking-[0.5em] transition-all duration-1000 delay-500 ${isOpen ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
+                    The Journal
+                  </span>
+                  <div className="flex flex-col space-y-4">
+                    {journalLinks.map((link, i) => (
+                      <div key={link.name} className="overflow-hidden py-1">
+                        <Link 
+                          to={link.path}
+                          style={{ transitionDelay: `${400 + i * 80}ms` }}
+                          className={`block text-4xl sm:text-5xl lg:text-7xl font-serif font-medium text-slate-900 dark:text-white hover:text-sky-500 dark:hover:text-sky-400 transition-all duration-700 transform leading-tight ${isOpen ? 'translate-y-0' : 'translate-y-full'}`}
+                        >
+                          {link.name}.
+                        </Link>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Secondary Links */}
+                <div className={`pt-12 border-t border-slate-100 dark:border-white/5 flex flex-wrap gap-x-12 gap-y-6 transition-all duration-1000 delay-700 ${isOpen ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
+                  {footerLinks.map((link) => (
+                    <Link
+                      key={link.name}
+                      to={link.path}
+                      className="text-[10px] font-black text-slate-400 uppercase tracking-[0.4em] hover:text-sky-500 transition-colors"
+                    >
+                      {link.name}
+                    </Link>
+                  ))}
+                </div>
+              </div>
             </div>
 
-            {/* CTA Buttons in Overlay */}
-            <div className={`mt-12 flex flex-col sm:flex-row items-center justify-center gap-4 w-full max-w-[280px] sm:max-w-md transition-all duration-1000 delay-500 ${isOpen ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
-              {ctaLinks.map((cta, i) => (
-                <Link
-                  key={cta.name}
-                  to={cta.path}
-                  className={`w-full sm:w-auto px-8 sm:px-12 py-4 sm:py-5 rounded-full text-[9px] sm:text-[10px] font-black uppercase tracking-[0.4em] transition-all duration-500 shadow-xl text-center ${i === 0 ? 'bg-slate-950 dark:bg-white text-white dark:text-slate-950 hover:bg-sky-500 hover:text-white dark:hover:bg-sky-400 dark:hover:text-white' : 'bg-white dark:bg-slate-900 text-slate-950 dark:text-white border border-slate-100 dark:border-white/5 hover:border-sky-500'}`}
-                >
-                  {cta.name}
-                </Link>
-              ))}
+            {/* CTA Buttons */}
+            <div className={`mt-24 flex flex-col sm:flex-row items-center justify-center gap-6 w-full max-w-md transition-all duration-1000 delay-800 ${isOpen ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
+              <Link
+                to="/plan"
+                className="w-full sm:w-auto px-12 py-5 rounded-full bg-slate-950 dark:bg-white text-white dark:text-slate-950 text-[10px] font-black uppercase tracking-[0.4em] transition-all duration-500 shadow-xl hover:bg-sky-500 hover:text-white dark:hover:bg-sky-400 dark:hover:text-white text-center"
+              >
+                {t('planTrip')}
+              </Link>
+              <Link
+                to="/inquire"
+                className="w-full sm:w-auto px-12 py-5 rounded-full bg-white dark:bg-slate-900 text-slate-950 dark:text-white border border-slate-100 dark:border-white/5 text-[10px] font-black uppercase tracking-[0.4em] transition-all duration-500 hover:border-sky-500 text-center"
+              >
+                Inquire
+              </Link>
             </div>
           </div>
           
-          <div className={`mt-auto mb-12 flex flex-col sm:flex-row items-center justify-center gap-6 sm:gap-16 transition-all duration-1000 delay-500 pb-10 ${isOpen ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
+          <div className={`mt-auto mb-12 flex flex-col sm:flex-row items-center justify-center gap-6 sm:gap-16 transition-all duration-1000 delay-1000 pb-10 ${isOpen ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
             <a href="#" className="text-[9px] md:text-[10px] font-bold uppercase tracking-[0.5em] text-slate-300 dark:text-slate-600 hover:text-slate-900 dark:hover:text-white transition-colors">Instagram</a>
             <Link to="/contact" className="text-[9px] md:text-[10px] font-bold uppercase tracking-[0.5em] text-slate-300 dark:text-slate-600 hover:text-slate-900 dark:hover:text-white transition-colors">Inquiries</Link>
           </div>

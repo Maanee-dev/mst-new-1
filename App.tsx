@@ -23,7 +23,7 @@ import Experiences from './pages/Experiences.tsx';
 import ExperienceDetail from './pages/ExperienceDetail.tsx';
 import Stories from './pages/Stories.tsx';
 import BlogPostDetail from './pages/BlogPostDetail.tsx';
-import PlanMyTrip from './pages/PlanMyTrip.tsx';
+import SmartPlanner from './pages/SmartPlanner.tsx';
 import AboutUs from './pages/AboutUs.tsx';
 import Contact from './pages/Contact.tsx';
 import FAQ from './pages/FAQ.tsx';
@@ -35,6 +35,8 @@ import AdminFAQ from './pages/AdminFAQ.tsx';
 import InquireNow from './pages/InquireNow.tsx';
 import RoomSelection from './pages/RoomSelection.tsx';
 import ThankYou from './pages/ThankYou.tsx';
+import FlightEngine from './pages/FlightEngine.tsx';
+import FlightBoard from './pages/FlightBoard.tsx';
 
 import { BagProvider, useBag } from './context/BagContext.tsx';
 import DiscoveryFeed from './components/DiscoveryFeed.tsx';
@@ -63,13 +65,15 @@ const AppContent: React.FC = () => {
         <Route path="/search" element={<SearchPage />} />
         <Route path="/stays" element={<Stays />} />
         <Route path="/stays/:slug" element={<ResortDetail />} />
+        <Route path="/flights" element={<FlightEngine />} />
+        <Route path="/flight-board" element={<FlightBoard />} />
         <Route path="/offers" element={<Offers />} />
         <Route path="/offers/:id" element={<OfferDetail />} />
         <Route path="/experiences" element={<Experiences />} />
         <Route path="/experiences/:slug" element={<ExperienceDetail />} />
         <Route path="/stories" element={<Stories />} />
         <Route path="/stories/:slug" element={<BlogPostDetail />} />
-        <Route path="/plan" element={<PlanMyTrip />} />
+        <Route path="/plan" element={<SmartPlanner />} />
         <Route path="/about" element={<AboutUs />} />
         <Route path="/contact" element={<Contact />} />
         <Route path="/faq" element={<FAQ />} />

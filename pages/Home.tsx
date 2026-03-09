@@ -7,6 +7,7 @@ import { BLOG_POSTS, RESORTS } from '../constants';
 import ResortCard from '../components/ResortCard';
 import SEO from '../components/SEO';
 import MaldivesGallery from '../components/MaldivesGallery';
+import LiveFlightBoard from '../components/LiveFlightBoard';
 import { useBag } from '../context/BagContext';
 
 const Home: React.FC = () => {
@@ -316,6 +317,13 @@ const Home: React.FC = () => {
               </div>
             </div>
           </div>
+        </div>
+      </section>
+
+      {/* Live Flight Board Section */}
+      <section className="py-24 md:py-32 lg:py-48 bg-white dark:bg-slate-950 border-y border-slate-100 dark:border-white/5">
+        <div className="max-w-[1440px] mx-auto px-6 lg:px-20">
+          <LiveFlightBoard limit={10} />
         </div>
       </section>
 

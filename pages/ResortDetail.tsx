@@ -65,7 +65,7 @@ const ResortDetail: React.FC = () => {
   });
 
   const [currentMonth, setCurrentMonth] = useState(new Date());
-  const { addItem, isInBag } = useBag();
+  const { addItem, isInBag, startDate, endDate } = useBag();
 
   useEffect(() => {
     const saved = localStorage.getItem(INQUIRY_STORAGE_KEY);
@@ -431,7 +431,9 @@ const ResortDetail: React.FC = () => {
                        image: resort.images[0],
                        slug: resort.slug,
                        price: resort.priceRange,
-                       details: resort.atoll
+                       details: resort.atoll,
+                       startDate: startDate?.toISOString().split('T')[0],
+                       endDate: endDate?.toISOString().split('T')[0]
                      });
                    }
                  }}
