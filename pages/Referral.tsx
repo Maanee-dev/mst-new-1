@@ -1,23 +1,57 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import SEO from '../components/SEO';
 import Dashboard from '../components/referral/Dashboard';
 import SignupModal from '../components/referral/SignupModal';
+import LoginModal from '../components/referral/LoginModal';
+import ReferralNav from '../components/referral/ReferralNav';
 import { motion } from 'motion/react';
+import { supabase } from '../lib/supabase';
 
 const ReferralPage: React.FC = () => {
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [session, setSession] = useState<any>(null);
   const [isSignupOpen, setIsSignupOpen] = useState(false);
+  const [isLoginOpen, setIsLoginOpen] = useState(false);
+  const [loading, setLoading] = useState(true);
 
-  if (isLoggedIn) {
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+      setLoading(false);
+    });
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setSession(session);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    setSession(null);
+  };
+
+  if (loading) {
     return (
-      <>
+      <div className="min-h-screen flex items-center justify-center bg-white dark:bg-slate-950">
+        <div className="w-12 h-12 border-4 border-sky-600 border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
+
+  if (session) {
+    return (
+      <div className="bg-white dark:bg-slate-950 min-h-screen">
         <SEO 
           title="Partner Dashboard | Maldives Serenity Travels" 
           description="Manage your referral earnings and track your performance as a Maldives Serenity Travels partner."
         />
-        <Dashboard />
-      </>
+        <ReferralNav onLogout={handleLogout} onLogin={() => setIsLoginOpen(true)} />
+        <div className="pt-20">
+          <Dashboard user={session.user} />
+        </div>
+      </div>
     );
   }
 
@@ -27,6 +61,8 @@ const ReferralPage: React.FC = () => {
         title="Partner Program | Maldives Serenity Travels" 
         description="Join the Maldives Serenity Travels Partner Program and earn $50 for every successful referral booking."
       />
+      
+      <ReferralNav onLogout={handleLogout} onLogin={() => setIsLoginOpen(true)} />
       
       {/* Landing Hero */}
       <section className="relative min-h-screen flex items-center justify-center overflow-hidden pt-20">
@@ -60,7 +96,7 @@ const ReferralPage: React.FC = () => {
                 Join Now - It's Free
               </button>
               <button 
-                onClick={() => setIsLoggedIn(true)}
+                onClick={() => setIsLoginOpen(true)}
                 className="w-full sm:w-auto bg-white dark:bg-slate-900 text-slate-900 dark:text-white px-16 py-7 rounded-full font-black text-[11px] uppercase tracking-[0.8em] border border-slate-200 dark:border-white/10 hover:bg-slate-50 transition-all"
               >
                 Partner Login
@@ -91,11 +127,15 @@ const ReferralPage: React.FC = () => {
         </div>
       </section>
 
-      {/* Signup Modal */}
+      {/* Modals */}
       <SignupModal 
         isOpen={isSignupOpen} 
         onClose={() => setIsSignupOpen(false)} 
-        onSuccess={() => setIsLoggedIn(true)} 
+        onSuccess={() => setIsSignupOpen(false)} 
+      />
+      <LoginModal 
+        isOpen={isLoginOpen} 
+        onClose={() => setIsLoginOpen(false)} 
       />
     </div>
   );

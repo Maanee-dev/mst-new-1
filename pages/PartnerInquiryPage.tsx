@@ -5,10 +5,13 @@ import { motion, AnimatePresence } from 'motion/react';
 import { Check, Loader2, Send, MapPin, Calendar, Users } from 'lucide-react';
 import SEO from '../components/SEO';
 
+import { supabase } from '../lib/supabase';
+
 const PartnerInquiryPage: React.FC = () => {
   const { partnerCode } = useParams<{ partnerCode: string }>();
   const [searchParams] = useSearchParams();
   const [status, setStatus] = useState<'idle' | 'loading' | 'success'>('idle');
+  const [partner, setPartner] = useState<any>(null);
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -19,15 +22,51 @@ const PartnerInquiryPage: React.FC = () => {
     message: ''
   });
 
+  useEffect(() => {
+    const fetchPartner = async () => {
+      if (!partnerCode) return;
+      
+      const { data, error } = await supabase
+        .from('partners')
+        .select('id, name, referral_code')
+        .eq('referral_code', partnerCode)
+        .single();
+
+      if (!error && data) {
+        setPartner(data);
+        // Increment clicks
+        await supabase.rpc('increment_partner_clicks', { code: partnerCode });
+      }
+    };
+    fetchPartner();
+  }, [partnerCode]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setStatus('loading');
     
-    // Simulate API call to save inquiry and link it to partnerCode
-    console.log(`Saving inquiry for partner: ${partnerCode}`, formData);
-    await new Promise(resolve => setTimeout(resolve, 2000));
-    
-    setStatus('success');
+    const { error } = await supabase
+      .from('referral_inquiries')
+      .insert([{
+        partner_id: partner?.id,
+        name: formData.name,
+        email: formData.email,
+        phone: formData.phone,
+        resort: formData.resort,
+        travel_dates: formData.dates,
+        guests: formData.guests,
+        message: formData.message,
+        status: 'Inquired',
+        stage: 'New'
+      }]);
+
+    if (error) {
+      console.error('Error saving inquiry:', error);
+      alert('Failed to send inquiry. Please try again.');
+      setStatus('idle');
+    } else {
+      setStatus('success');
+    }
   };
 
   return (

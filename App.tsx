@@ -57,12 +57,14 @@ const ScrollToTopOnRoute = () => {
 
 const AppContent: React.FC = () => {
   const { isDiscoveryMode } = useBag();
+  const location = useLocation();
+  const isReferralRoute = location.pathname.startsWith('/referral') || location.pathname.startsWith('/inquiry/');
 
   return (
     <>
       <ScrollToTopOnRoute />
       <UserPanel />
-      {!isDiscoveryMode && <Navbar />}
+      {!isDiscoveryMode && !isReferralRoute && <Navbar />}
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/search" element={<SearchPage />} />
@@ -97,7 +99,7 @@ const AppContent: React.FC = () => {
         <Route path="/auth/callback" element={<AuthCallback />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
-      {!isDiscoveryMode && (
+      {!isDiscoveryMode && !isReferralRoute && (
         <>
           <ChatBot />
           <LanguageSelector />
@@ -107,7 +109,7 @@ const AppContent: React.FC = () => {
       <ScrollToTopButton />
       <CookieConsent />
       <OfferNewsletterPopup />
-      {!isDiscoveryMode && <Footer />}
+      {!isDiscoveryMode && !isReferralRoute && <Footer />}
     </>
   );
 };

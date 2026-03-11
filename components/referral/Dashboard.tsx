@@ -23,133 +23,109 @@ import AdminPanel from './AdminPanel';
 import { MOCK_STATS, MOCK_ACTIVITIES, MOCK_CHART_DATA, simulateApiCall } from './mockData';
 import { ReferrerStats, ReferralActivity, MonthlyEarnings } from './types';
 
-const Dashboard: React.FC = () => {
+import { supabase } from '../../lib/supabase';
+
+interface DashboardProps {
+  user: any;
+}
+
+const Dashboard: React.FC<DashboardProps> = ({ user }) => {
   const [activeTab, setActiveTab] = useState('Dashboard');
-  const [stats, setStats] = useState<ReferrerStats | null>(null);
+  const [partner, setPartner] = useState<any>(null);
   const [activities, setActivities] = useState<ReferralActivity[]>([]);
   const [chartData, setChartData] = useState<MonthlyEarnings[]>([]);
   const [loading, setLoading] = useState(true);
-  const [showProfileMenu, setShowProfileMenu] = useState(false);
 
   useEffect(() => {
     const loadData = async () => {
       setLoading(true);
-      const [s, a, c] = await Promise.all([
-        simulateApiCall(MOCK_STATS),
-        simulateApiCall(MOCK_ACTIVITIES),
-        simulateApiCall(MOCK_CHART_DATA)
-      ]);
-      setStats(s);
-      setActivities(a);
-      setChartData(c);
+      
+      // 1. Fetch Partner Profile
+      const { data: partnerData, error: partnerError } = await supabase
+        .from('partners')
+        .select('*')
+        .eq('user_id', user.id)
+        .single();
+
+      if (partnerError) {
+        console.error('Error fetching partner:', partnerError);
+      } else {
+        setPartner(partnerData);
+      }
+
+      // 2. Fetch Inquiries (Activities)
+      if (partnerData) {
+        const { data: inquiryData, error: inquiryError } = await supabase
+          .from('referral_inquiries')
+          .select('*')
+          .eq('partner_id', partnerData.id)
+          .order('created_at', { ascending: false });
+
+        if (inquiryError) {
+          console.error('Error fetching inquiries:', inquiryError);
+        } else {
+          // Map DB fields to component types
+          const mappedActivities: ReferralActivity[] = (inquiryData || []).map(item => ({
+            id: item.id,
+            date: item.created_at,
+            name: item.name,
+            status: item.status as ReferralStatus,
+            stage: item.stage as DealStage,
+            value: item.value,
+            reward: item.reward,
+            email: item.email,
+            resort: item.resort
+          }));
+          setActivities(mappedActivities);
+        }
+      }
+
+      // 3. Mock Chart Data (since we don't have historical aggregation yet)
+      setChartData(MOCK_CHART_DATA);
+      
       setLoading(false);
     };
-    loadData();
-  }, []);
 
-  const navItems = [
-    { name: 'Dashboard', icon: <LayoutDashboard size={18} /> },
-    { name: 'Earnings', icon: <DollarSign size={18} /> },
-    { name: 'Referrals', icon: <Users size={18} /> },
-    { name: 'Settings', icon: <Settings size={18} /> },
-    { name: 'Help', icon: <HelpCircle size={18} /> },
-    { name: 'Admin', icon: <Users size={18} /> }, // Simplified admin view
-  ];
+    if (user) {
+      loadData();
+    }
+  }, [user]);
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-slate-50 dark:bg-slate-950 p-8">
-        <div className="max-w-7xl mx-auto space-y-8">
-          <div className="h-20 bg-white dark:bg-slate-900 rounded-3xl animate-pulse"></div>
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-            {[1, 2, 3, 4].map(i => <div key={i} className="h-32 bg-white dark:bg-slate-900 rounded-2xl animate-pulse"></div>)}
-          </div>
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-            <div className="lg:col-span-8 h-96 bg-white dark:bg-slate-900 rounded-3xl animate-pulse"></div>
-            <div className="lg:col-span-4 h-96 bg-white dark:bg-slate-900 rounded-3xl animate-pulse"></div>
-          </div>
+      <div className="max-w-7xl mx-auto space-y-8 p-8">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+          {[1, 2, 3, 4].map(i => <div key={i} className="h-32 bg-white dark:bg-slate-900 rounded-2xl animate-pulse"></div>)}
+        </div>
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+          <div className="lg:col-span-8 h-96 bg-white dark:bg-slate-900 rounded-3xl animate-pulse"></div>
+          <div className="lg:col-span-4 h-96 bg-white dark:bg-slate-900 rounded-3xl animate-pulse"></div>
         </div>
       </div>
     );
   }
 
+  const stats: ReferrerStats = {
+    totalClicks: partner?.total_clicks || 0,
+    totalLeads: partner?.total_leads || 0,
+    confirmedBookings: partner?.confirmed_bookings || 0,
+    totalEarnings: partner?.total_earnings || 0,
+    availableEarnings: partner?.available_earnings || 0,
+    trends: { clicks: 0, leads: 0, bookings: 0, earnings: 0 }
+  };
+
   return (
     <div className="min-h-screen bg-[#F0F9FF] dark:bg-slate-950 transition-colors duration-700">
-      {/* Header */}
-      <header className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border-b border-slate-100 dark:border-white/5 sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
-          <div className="flex items-center gap-12">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-sky-600 rounded-xl flex items-center justify-center text-white font-serif text-xl font-bold">M</div>
-              <span className="text-sm font-black uppercase tracking-[0.3em] text-slate-900 dark:text-white hidden sm:block">Serenity <span className="text-sky-500">Partners</span></span>
-            </div>
-            <nav className="hidden lg:flex items-center gap-8">
-              {navItems.map(item => (
-                <button 
-                  key={item.name}
-                  onClick={() => setActiveTab(item.name)}
-                  className={`text-[10px] font-black uppercase tracking-widest transition-all relative py-2 ${activeTab === item.name ? 'text-sky-600' : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-200'}`}
-                >
-                  {item.name}
-                  {activeTab === item.name && (
-                    <motion.div layoutId="activeTab" className="absolute -bottom-1 left-0 right-0 h-0.5 bg-sky-600 rounded-full" />
-                  )}
-                </button>
-              ))}
-            </nav>
-          </div>
-
-          <div className="flex items-center gap-6">
-            <button className="p-2.5 bg-slate-50 dark:bg-slate-800 rounded-xl text-slate-400 hover:text-slate-900 transition-colors relative">
-              <Bell size={20} />
-              <span className="absolute top-2 right-2 w-2 h-2 bg-rose-500 rounded-full border-2 border-white dark:border-slate-800"></span>
-            </button>
-            <div className="relative">
-              <button 
-                onClick={() => setShowProfileMenu(!showProfileMenu)}
-                className="flex items-center gap-3 p-1.5 pr-4 bg-slate-50 dark:bg-slate-800 rounded-2xl hover:bg-slate-100 transition-all"
-              >
-                <img src="https://i.pravatar.cc/150?u=sarah" className="w-8 h-8 rounded-xl object-cover" alt="Profile" />
-                <div className="text-left hidden sm:block">
-                  <p className="text-[10px] font-black text-slate-900 dark:text-white uppercase tracking-widest">Sarah Johnson</p>
-                  <p className="text-[9px] text-slate-400 font-bold uppercase tracking-widest">Premium Partner</p>
-                </div>
-                <ChevronDown size={14} className={`text-slate-400 transition-transform ${showProfileMenu ? 'rotate-180' : ''}`} />
-              </button>
-              
-              <AnimatePresence>
-                {showProfileMenu && (
-                  <motion.div 
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: 10 }}
-                    className="absolute right-0 mt-4 w-56 bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-100 dark:border-white/5 p-2 overflow-hidden"
-                  >
-                    <button className="w-full flex items-center gap-3 px-4 py-3 text-[10px] font-black uppercase tracking-widest text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-xl transition-all">
-                      <Settings size={16} /> Account Settings
-                    </button>
-                    <button className="w-full flex items-center gap-3 px-4 py-3 text-[10px] font-black uppercase tracking-widest text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-xl transition-all">
-                      <HelpCircle size={16} /> Help Center
-                    </button>
-                    <div className="h-px bg-slate-50 dark:bg-white/5 my-2"></div>
-                    <button className="w-full flex items-center gap-3 px-4 py-3 text-[10px] font-black uppercase tracking-widest text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/20 rounded-xl transition-all">
-                      <LogOut size={16} /> Logout
-                    </button>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
-          </div>
-        </div>
-      </header>
-
       <main className="max-w-7xl mx-auto px-6 py-12">
         {activeTab === 'Admin' ? (
           <AdminPanel />
         ) : (
           <div className="space-y-12">
             {/* Hero Section */}
-            <ReferralLink link="maldivesserenity.com/ref/sarah-johnson" code="SARAH-J-2024" />
+            <ReferralLink 
+              link={`${window.location.origin}/inquiry/${partner?.referral_code}`} 
+              code={partner?.referral_code || '...'} 
+            />
 
             {/* Stats Grid */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">

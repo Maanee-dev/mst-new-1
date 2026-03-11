@@ -9,8 +9,13 @@ interface SignupModalProps {
   onSuccess: () => void;
 }
 
+import { supabase } from '../../lib/supabase';
+import { Loader2 } from 'lucide-react';
+
 const SignupModal: React.FC<SignupModalProps> = ({ isOpen, onClose, onSuccess }) => {
   const [step, setStep] = useState(1);
+  const [loading, setLoading] = useState(false);
+  const [referralCode, setReferralCode] = useState('');
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -21,9 +26,51 @@ const SignupModal: React.FC<SignupModalProps> = ({ isOpen, onClose, onSuccess })
   });
 
   const handleNext = () => setStep(prev => prev + 1);
-  const handleSubmit = (e: React.FormEvent) => {
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    handleNext();
+    setLoading(true);
+    
+    try {
+      // 1. Sign up the user
+      const { data: authData, error: authError } = await supabase.auth.signUp({
+        email: formData.email,
+        password: formData.password,
+        options: {
+          data: {
+            full_name: formData.name,
+          }
+        }
+      });
+
+      if (authError) throw authError;
+
+      if (authData.user) {
+        // 2. Generate a referral code
+        const code = formData.name.split(' ')[0].toUpperCase() + '-' + Math.random().toString(36).substring(2, 6).toUpperCase();
+        setReferralCode(code);
+
+        // 3. Create partner record
+        const { error: partnerError } = await supabase
+          .from('partners')
+          .insert([{
+            user_id: authData.user.id,
+            name: formData.name,
+            email: formData.email,
+            referral_code: code,
+            status: 'Active'
+          }]);
+
+        if (partnerError) throw partnerError;
+        
+        handleNext();
+      }
+    } catch (error: any) {
+      console.error('Signup error:', error);
+      alert(error.message || 'Failed to register. Please try again.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   if (!isOpen) return null;
@@ -183,10 +230,10 @@ const SignupModal: React.FC<SignupModalProps> = ({ isOpen, onClose, onSuccess })
 
                     <button 
                       type="submit"
-                      disabled={!formData.agree}
-                      className="w-full bg-slate-950 dark:bg-white text-white dark:text-slate-950 py-5 rounded-2xl font-black text-[11px] uppercase tracking-[0.4em] hover:bg-sky-600 dark:hover:bg-sky-100 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                      disabled={!formData.agree || loading}
+                      className="w-full bg-slate-950 dark:bg-white text-white dark:text-slate-950 py-5 rounded-2xl font-black text-[11px] uppercase tracking-[0.4em] hover:bg-sky-600 dark:hover:bg-sky-100 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-3"
                     >
-                      Complete Registration
+                      {loading ? <Loader2 size={18} className="animate-spin" /> : 'Complete Registration'}
                     </button>
 
                     <div className="relative py-4">
@@ -217,11 +264,11 @@ const SignupModal: React.FC<SignupModalProps> = ({ isOpen, onClose, onSuccess })
                   <div className="bg-slate-50 dark:bg-slate-800 p-8 rounded-3xl mb-12 space-y-6">
                     <div>
                       <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.4em] mb-4">Your Referral Code</p>
-                      <p className="text-2xl font-black text-sky-600 tracking-[0.2em] uppercase">SARAH-J-2024</p>
+                      <p className="text-2xl font-black text-sky-600 tracking-[0.2em] uppercase">{referralCode}</p>
                     </div>
                     <div className="pt-6 border-t border-slate-200 dark:border-white/5">
                       <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.4em] mb-4">Your Personalized Inquiry Link</p>
-                      <p className="text-xs font-bold text-slate-600 dark:text-slate-300 break-all">maldives-serenitytravels.com/inquiry/SARAH-J-2024</p>
+                      <p className="text-xs font-bold text-slate-600 dark:text-slate-300 break-all">{window.location.origin}/inquiry/{referralCode}</p>
                     </div>
                   </div>
 
