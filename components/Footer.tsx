@@ -68,7 +68,7 @@ const Footer: React.FC = () => {
           <div className="space-y-8">
             <h4 className="text-[11px] font-bold uppercase tracking-[0.4em] text-slate-900 dark:text-white">{t('footer.nav.governance')}</h4>
             <ul className="space-y-4 text-slate-600 dark:text-slate-400 text-[10px] uppercase font-bold tracking-widest">
-              <li><Link to="/terms" className="hover:text-sky-500 transition-colors">{t('footer.nav.terms')}</Link></li>
+              <li><Link to="/terms-of-service" className="hover:text-sky-500 transition-colors">{t('footer.nav.terms')}</Link></li>
               <li><Link to="/privacy-policy" className="hover:text-sky-500 transition-colors uppercase">{t('footer.nav.privacy')}</Link></li>
               <li><Link to="/faq" className="hover:text-sky-500 transition-colors">{t('footer.nav.faq')}</Link></li>
               <li><Link to="/safety" className="hover:text-sky-500 transition-colors opacity-60 cursor-not-allowed">{t('footer.nav.safety')}</Link></li>
