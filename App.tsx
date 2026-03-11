@@ -82,6 +82,7 @@ const AppContent: React.FC = () => {
         <Route path="/thank-you" element={<ThankYou />} />
         <Route path="/terms" element={<Terms />} />
         <Route path="/privacy" element={<Privacy />} />
+        <Route path="/privacy-policy" element={<Privacy />} />
         <Route path="/admin/sync" element={<AdminSync />} />
         <Route path="/admin/stories" element={<AdminStories />} />
         <Route path="/admin/faqs" element={<AdminFAQ />} />

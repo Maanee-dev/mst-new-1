@@ -1,11 +1,9 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import PrivacyModal from './PrivacyModal';
 
 const Footer: React.FC = () => {
   const { t } = useTranslation();
-  const [isPrivacyOpen, setIsPrivacyOpen] = useState(false);
   const paymentImgClass = "h-4 md:h-5 w-auto object-contain grayscale brightness-0 opacity-30 group-hover:grayscale-0 group-hover:brightness-100 group-hover:opacity-100 dark:invert dark:opacity-10 dark:group-hover:invert-0 dark:group-hover:opacity-100 transition-all duration-700 ease-in-out select-none pointer-events-none";
 
   return (
@@ -71,7 +69,7 @@ const Footer: React.FC = () => {
             <h4 className="text-[11px] font-bold uppercase tracking-[0.4em] text-slate-900 dark:text-white">{t('footer.nav.governance')}</h4>
             <ul className="space-y-4 text-slate-600 dark:text-slate-400 text-[10px] uppercase font-bold tracking-widest">
               <li><Link to="/terms" className="hover:text-sky-500 transition-colors">{t('footer.nav.terms')}</Link></li>
-              <li><button onClick={() => setIsPrivacyOpen(true)} className="hover:text-sky-500 transition-colors text-left uppercase">{t('footer.nav.privacy')}</button></li>
+              <li><Link to="/privacy-policy" className="hover:text-sky-500 transition-colors uppercase">{t('footer.nav.privacy')}</Link></li>
               <li><Link to="/faq" className="hover:text-sky-500 transition-colors">{t('footer.nav.faq')}</Link></li>
               <li><Link to="/safety" className="hover:text-sky-500 transition-colors opacity-60 cursor-not-allowed">{t('footer.nav.safety')}</Link></li>
             </ul>
@@ -132,7 +130,6 @@ const Footer: React.FC = () => {
           </div>
         </div>
       </div>
-      <PrivacyModal isOpen={isPrivacyOpen} onClose={() => setIsPrivacyOpen(false)} />
     </footer>
   );
 };
