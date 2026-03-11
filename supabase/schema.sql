@@ -64,9 +64,18 @@ CREATE POLICY "Users can view own profile"
     ON public.profiles FOR SELECT 
     USING (auth.uid() = user_id);
 
+CREATE POLICY "Users can insert own profile" 
+    ON public.profiles FOR INSERT 
+    WITH CHECK (auth.uid() = user_id);
+
 CREATE POLICY "Users can update own profile" 
     ON public.profiles FOR UPDATE 
     USING (auth.uid() = user_id);
+
+-- Allow public to view partner name and code (for inquiry page)
+CREATE POLICY "Public can view partner info" 
+    ON public.profiles FOR SELECT 
+    USING (true);
 
 -- Inquiries: Partners can only see inquiries linked to them
 CREATE POLICY "Partners can view own inquiries" 

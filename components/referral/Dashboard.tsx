@@ -101,6 +101,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user }) => {
           const { data: newProfile, error: createError } = await supabase
             .from('profiles')
             .insert([{
+              id: user.id, // Explicitly set the primary key to the user's ID
               user_id: user.id,
               name: user.user_metadata?.full_name || 'Partner',
               email: user.email,
@@ -112,6 +113,8 @@ const Dashboard: React.FC<DashboardProps> = ({ user }) => {
           
           if (!createError) {
             setPartner(newProfile);
+          } else {
+            console.error('Error creating profile:', createError);
           }
         }
       } catch (err) {
