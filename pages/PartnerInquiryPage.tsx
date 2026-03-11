@@ -27,7 +27,7 @@ const PartnerInquiryPage: React.FC = () => {
       if (!partnerCode) return;
       
       const { data, error } = await supabase
-        .from('partners')
+        .from('profiles')
         .select('id, name, referral_code')
         .eq('referral_code', partnerCode)
         .single();

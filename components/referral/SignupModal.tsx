@@ -52,7 +52,7 @@ const SignupModal: React.FC<SignupModalProps> = ({ isOpen, onClose, onSuccess })
 
         // 3. Create partner record
         const { error: partnerError } = await supabase
-          .from('partners')
+          .from('profiles')
           .insert([{
             user_id: authData.user.id,
             name: formData.name,

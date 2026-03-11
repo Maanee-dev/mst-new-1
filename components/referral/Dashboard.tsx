@@ -38,58 +38,94 @@ const Dashboard: React.FC<DashboardProps> = ({ user }) => {
 
   useEffect(() => {
     const loadData = async () => {
+      if (!user?.id) return;
       setLoading(true);
       
-      // 1. Fetch Partner Profile
-      const { data: partnerData, error: partnerError } = await supabase
-        .from('partners')
-        .select('*')
-        .eq('user_id', user.id)
-        .single();
-
-      if (partnerError) {
-        console.error('Error fetching partner:', partnerError);
-      } else {
-        setPartner(partnerData);
-      }
-
-      // 2. Fetch Inquiries (Activities)
-      if (partnerData) {
-        const { data: inquiryData, error: inquiryError } = await supabase
-          .from('referral_inquiries')
+      try {
+        // 1. Fetch Partner Profile
+        const { data: partnerData, error: partnerError } = await supabase
+          .from('profiles')
           .select('*')
-          .eq('partner_id', partnerData.id)
-          .order('created_at', { ascending: false });
+          .eq('user_id', user.id)
+          .maybeSingle();
 
-        if (inquiryError) {
-          console.error('Error fetching inquiries:', inquiryError);
+        if (partnerError) {
+          console.error('Error fetching partner:', partnerError);
+        } else if (partnerData) {
+          // If referral code is missing, generate one (for existing profiles)
+          if (!partnerData.referral_code) {
+            const newCode = (partnerData.name || 'PARTNER').split(' ')[0].toUpperCase() + '-' + Math.random().toString(36).substring(2, 6).toUpperCase();
+            const { data: updatedPartner, error: updateError } = await supabase
+              .from('profiles')
+              .update({ referral_code: newCode })
+              .eq('id', partnerData.id)
+              .select()
+              .single();
+            
+            if (!updateError) {
+              setPartner(updatedPartner);
+            } else {
+              setPartner(partnerData);
+            }
+          } else {
+            setPartner(partnerData);
+          }
+
+          // 2. Fetch Inquiries (Activities)
+          const { data: inquiryData, error: inquiryError } = await supabase
+            .from('referral_inquiries')
+            .select('*')
+            .eq('partner_id', partnerData.id)
+            .order('created_at', { ascending: false });
+
+          if (inquiryError) {
+            console.error('Error fetching inquiries:', inquiryError);
+          } else {
+            // Map DB fields to component types
+            const mappedActivities: ReferralActivity[] = (inquiryData || []).map(item => ({
+              id: item.id,
+              date: item.created_at,
+              name: item.name,
+              status: item.status as any,
+              stage: item.stage as any,
+              value: item.value,
+              reward: item.reward,
+              email: item.email,
+              resort: item.resort
+            }));
+            setActivities(mappedActivities);
+          }
         } else {
-          // Map DB fields to component types
-          const mappedActivities: ReferralActivity[] = (inquiryData || []).map(item => ({
-            id: item.id,
-            date: item.created_at,
-            name: item.name,
-            status: item.status as ReferralStatus,
-            stage: item.stage as DealStage,
-            value: item.value,
-            reward: item.reward,
-            email: item.email,
-            resort: item.resort
-          }));
-          setActivities(mappedActivities);
+          // Profile doesn't exist, create it
+          const newCode = (user.user_metadata?.full_name || 'PARTNER').split(' ')[0].toUpperCase() + '-' + Math.random().toString(36).substring(2, 6).toUpperCase();
+          const { data: newProfile, error: createError } = await supabase
+            .from('profiles')
+            .insert([{
+              user_id: user.id,
+              name: user.user_metadata?.full_name || 'Partner',
+              email: user.email,
+              referral_code: newCode,
+              status: 'Active'
+            }])
+            .select()
+            .single();
+          
+          if (!createError) {
+            setPartner(newProfile);
+          }
         }
+      } catch (err) {
+        console.error('Unexpected error in Dashboard:', err);
+      } finally {
+        setLoading(false);
       }
 
       // 3. Mock Chart Data (since we don't have historical aggregation yet)
       setChartData(MOCK_CHART_DATA);
-      
-      setLoading(false);
     };
 
-    if (user) {
-      loadData();
-    }
-  }, [user]);
+    loadData();
+  }, [user?.id]);
 
   if (loading) {
     return (

@@ -1,8 +1,8 @@
 
 -- Supabase Schema for Maldives Serenity Travels Referral & Inquiry System
 
--- 1. Partners Table (Referrers)
-CREATE TABLE IF NOT EXISTS public.partners (
+-- 1. Profiles Table (Referrers)
+CREATE TABLE IF NOT EXISTS public.profiles (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
     name TEXT NOT NULL,
@@ -24,7 +24,7 @@ CREATE TABLE IF NOT EXISTS public.partners (
 -- 2. Inquiries Table (Leads & Deals)
 CREATE TABLE IF NOT EXISTS public.referral_inquiries (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    partner_id UUID REFERENCES public.partners(id) ON DELETE SET NULL,
+    partner_id UUID REFERENCES public.profiles(id) ON DELETE SET NULL,
     name TEXT NOT NULL,
     email TEXT NOT NULL,
     phone TEXT,
@@ -43,7 +43,7 @@ CREATE TABLE IF NOT EXISTS public.referral_inquiries (
 -- 3. Payouts Table
 CREATE TABLE IF NOT EXISTS public.payouts (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    partner_id UUID REFERENCES public.partners(id) ON DELETE CASCADE,
+    partner_id UUID REFERENCES public.profiles(id) ON DELETE CASCADE,
     amount NUMERIC(10, 2) NOT NULL,
     method TEXT NOT NULL,
     status TEXT DEFAULT 'Pending' CHECK (status IN ('Pending', 'Paid', 'Cancelled')),
@@ -53,25 +53,25 @@ CREATE TABLE IF NOT EXISTS public.payouts (
 );
 
 -- 4. Enable Row Level Security (RLS)
-ALTER TABLE public.partners ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.referral_inquiries ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.payouts ENABLE ROW LEVEL SECURITY;
 
 -- 5. RLS Policies
 
--- Partners: Users can only see and update their own partner profile
-CREATE POLICY "Partners can view own profile" 
-    ON public.partners FOR SELECT 
+-- Profiles: Users can only see and update their own profile
+CREATE POLICY "Users can view own profile" 
+    ON public.profiles FOR SELECT 
     USING (auth.uid() = user_id);
 
-CREATE POLICY "Partners can update own profile" 
-    ON public.partners FOR UPDATE 
+CREATE POLICY "Users can update own profile" 
+    ON public.profiles FOR UPDATE 
     USING (auth.uid() = user_id);
 
 -- Inquiries: Partners can only see inquiries linked to them
 CREATE POLICY "Partners can view own inquiries" 
     ON public.referral_inquiries FOR SELECT 
-    USING (partner_id IN (SELECT id FROM public.partners WHERE user_id = auth.uid()));
+    USING (partner_id IN (SELECT id FROM public.profiles WHERE user_id = auth.uid()));
 
 -- Allow public to create inquiries (from the partner inquiry page)
 CREATE POLICY "Public can create inquiries" 
@@ -81,7 +81,7 @@ CREATE POLICY "Public can create inquiries"
 -- Payouts: Partners can only see their own payouts
 CREATE POLICY "Partners can view own payouts" 
     ON public.payouts FOR SELECT 
-    USING (partner_id IN (SELECT id FROM public.partners WHERE user_id = auth.uid()));
+    USING (partner_id IN (SELECT id FROM public.profiles WHERE user_id = auth.uid()));
 
 -- 6. Triggers for updated_at
 CREATE OR REPLACE FUNCTION update_updated_at_column()
@@ -92,14 +92,14 @@ BEGIN
 END;
 $$ language 'plpgsql';
 
-CREATE TRIGGER update_partners_updated_at BEFORE UPDATE ON public.partners FOR EACH ROW EXECUTE PROCEDURE update_updated_at_column();
+CREATE TRIGGER update_profiles_updated_at BEFORE UPDATE ON public.profiles FOR EACH ROW EXECUTE PROCEDURE update_updated_at_column();
 CREATE TRIGGER update_referral_inquiries_updated_at BEFORE UPDATE ON public.referral_inquiries FOR EACH ROW EXECUTE PROCEDURE update_updated_at_column();
 
 -- 7. Helper Function to increment clicks
 CREATE OR REPLACE FUNCTION increment_partner_clicks(code TEXT)
 RETURNS VOID AS $$
 BEGIN
-    UPDATE public.partners 
+    UPDATE public.profiles 
     SET total_clicks = total_clicks + 1 
     WHERE referral_code = code;
 END;
