@@ -70,6 +70,7 @@ const Footer: React.FC = () => {
             <ul className="space-y-4 text-slate-600 dark:text-slate-400 text-[10px] uppercase font-bold tracking-widest">
               <li><Link to="/terms-of-service" className="hover:text-sky-500 transition-colors">{t('footer.nav.terms')}</Link></li>
               <li><Link to="/privacy-policy" className="hover:text-sky-500 transition-colors uppercase">{t('footer.nav.privacy')}</Link></li>
+              <li><Link to="/cookie-policy" className="hover:text-sky-500 transition-colors uppercase">{t('footer.nav.cookies')}</Link></li>
               <li><Link to="/faq" className="hover:text-sky-500 transition-colors">{t('footer.nav.faq')}</Link></li>
               <li><Link to="/safety" className="hover:text-sky-500 transition-colors opacity-60 cursor-not-allowed">{t('footer.nav.safety')}</Link></li>
             </ul>

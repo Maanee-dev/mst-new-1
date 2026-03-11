@@ -382,6 +382,7 @@ const resources = {
           governance: "Governance",
           terms: "Terms of Service",
           privacy: "Privacy Policy",
+          cookies: "Cookie Policy",
           faq: "Travel FAQ",
           safety: "Safety Protocols",
           social: "Social",

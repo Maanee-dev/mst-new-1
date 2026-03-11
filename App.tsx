@@ -29,6 +29,7 @@ import Contact from './pages/Contact.tsx';
 import FAQ from './pages/FAQ.tsx';
 import Terms from './pages/Terms.tsx';
 import Privacy from './pages/Privacy.tsx';
+import CookiePolicy from './pages/CookiePolicy.tsx';
 import AdminSync from './pages/AdminSync.tsx';
 import AdminStories from './pages/AdminStories.tsx';
 import AdminFAQ from './pages/AdminFAQ.tsx';
@@ -84,6 +85,7 @@ const AppContent: React.FC = () => {
         <Route path="/terms-of-service" element={<Terms />} />
         <Route path="/privacy" element={<Privacy />} />
         <Route path="/privacy-policy" element={<Privacy />} />
+        <Route path="/cookie-policy" element={<CookiePolicy />} />
         <Route path="/admin/sync" element={<AdminSync />} />
         <Route path="/admin/stories" element={<AdminStories />} />
         <Route path="/admin/faqs" element={<AdminFAQ />} />

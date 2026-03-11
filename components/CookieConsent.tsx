@@ -65,12 +65,18 @@ const CookieConsent: React.FC = () => {
                   </button>
                 </div>
                 
-                <div className="flex items-center justify-center gap-4 pt-2">
+                <div className="flex items-center justify-center gap-6 pt-2">
                   <Link 
-                    to="/privacy" 
+                    to="/cookie-policy" 
                     className="text-[9px] font-black text-slate-400 hover:text-sky-600 uppercase tracking-[0.3em] transition-colors flex items-center gap-2 group"
                   >
-                    Read Terms <ArrowRight className="w-3 h-3 group-hover:translate-x-1 transition-transform" />
+                    Cookie Policy <ArrowRight className="w-3 h-3 group-hover:translate-x-1 transition-transform" />
+                  </Link>
+                  <Link 
+                    to="/privacy-policy" 
+                    className="text-[9px] font-black text-slate-400 hover:text-sky-600 uppercase tracking-[0.3em] transition-colors flex items-center gap-2 group"
+                  >
+                    Privacy <ArrowRight className="w-3 h-3 group-hover:translate-x-1 transition-transform" />
                   </Link>
                 </div>
               </div>

@@ -9,14 +9,7 @@ interface GalleryImage {
   text: string;
 }
 
-const maldivesFacts = [
-  "The Maldives consists of 1,192 coral islands grouped in a double chain of 26 atolls.",
-  "It is the lowest-lying country in the world, with an average ground level of 1.5 meters.",
-  "The islands are famous for their white sandy beaches and crystal clear turquoise lagoons.",
-  "Maldives is home to some of the most diverse marine life, including whale sharks and manta rays.",
-  "Each resort is typically located on its own private island, ensuring ultimate seclusion.",
-  "The traditional Maldivian culture is a rich blend of African, Indian, and Arabian influences."
-];
+
 
 const RESORT_NAMES = [
   'Patina Maldives',
@@ -179,21 +172,6 @@ const MaldivesGallery: React.FC = () => {
 
       <div className="space-y-12">
         <GalleryRow rowImages={row1} direction="left" speed={1.2} />
-        
-        {/* Fact Marquee */}
-        <div className="py-16 bg-slate-50 dark:bg-slate-900/40 border-y border-slate-100 dark:border-white/5 overflow-hidden">
-          <motion.div
-            className="flex gap-32 whitespace-nowrap px-12"
-            animate={{ x: ["0%", "-50%"] }}
-            transition={{ duration: 150, repeat: Infinity, ease: "linear" }}
-          >
-            {[...maldivesFacts, ...maldivesFacts].map((fact, i) => (
-              <span key={i} className="text-3xl md:text-5xl lg:text-6xl font-serif font-medium text-slate-300 dark:text-slate-700 italic">
-                {fact}
-              </span>
-            ))}
-          </motion.div>
-        </div>
 
         <GalleryRow rowImages={row2} direction="right" speed={1.5} />
       </div>
@@ -201,7 +179,6 @@ const MaldivesGallery: React.FC = () => {
       <div className="max-w-[1440px] mx-auto px-6 lg:px-12 mt-32 text-center reveal active">
         <div className="inline-flex items-center gap-6 text-[10px] font-black text-slate-300 dark:text-slate-700 uppercase tracking-[0.6em]">
           <div className="w-16 h-px bg-slate-100 dark:bg-white/5"></div>
-          <span>Interactive Horizon — Drag or Scroll to Explore</span>
           <div className="w-16 h-px bg-slate-100 dark:bg-white/5"></div>
         </div>
       </div>
