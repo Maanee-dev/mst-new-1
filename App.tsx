@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { BrowserRouter, Routes, Route, useLocation, Navigate } from 'react-router-dom';
+import { Routes, Route, useLocation, Navigate } from 'react-router-dom';
 import Navbar from './components/Navbar.tsx';
 import Footer from './components/Footer.tsx';
 import ScrollToTopButton from './components/ScrollToTopButton.tsx';
@@ -30,8 +30,6 @@ import FAQ from './pages/FAQ.tsx';
 import Terms from './pages/Terms.tsx';
 import Privacy from './pages/Privacy.tsx';
 import CookiePolicy from './pages/CookiePolicy.tsx';
-import ReferralPage from './pages/Referral.tsx';
-import PartnerInquiryPage from './pages/PartnerInquiryPage.tsx';
 import AdminSync from './pages/AdminSync.tsx';
 import AdminStories from './pages/AdminStories.tsx';
 import AdminFAQ from './pages/AdminFAQ.tsx';
@@ -57,14 +55,12 @@ const ScrollToTopOnRoute = () => {
 
 const AppContent: React.FC = () => {
   const { isDiscoveryMode } = useBag();
-  const location = useLocation();
-  const isReferralRoute = location.pathname.startsWith('/referral') || location.pathname.startsWith('/inquiry/');
 
   return (
     <>
       <ScrollToTopOnRoute />
       <UserPanel />
-      {!isDiscoveryMode && !isReferralRoute && <Navbar />}
+      {!isDiscoveryMode && <Navbar />}
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/search" element={<SearchPage />} />
@@ -90,8 +86,6 @@ const AppContent: React.FC = () => {
         <Route path="/privacy" element={<Privacy />} />
         <Route path="/privacy-policy" element={<Privacy />} />
         <Route path="/cookie-policy" element={<CookiePolicy />} />
-        <Route path="/referral" element={<ReferralPage />} />
-        <Route path="/inquiry/:partnerCode" element={<PartnerInquiryPage />} />
         <Route path="/admin/sync" element={<AdminSync />} />
         <Route path="/admin/stories" element={<AdminStories />} />
         <Route path="/admin/faqs" element={<AdminFAQ />} />
@@ -99,7 +93,7 @@ const AppContent: React.FC = () => {
         <Route path="/auth/callback" element={<AuthCallback />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
-      {!isDiscoveryMode && !isReferralRoute && (
+      {!isDiscoveryMode && (
         <>
           <ChatBot />
           <LanguageSelector />
@@ -109,7 +103,7 @@ const AppContent: React.FC = () => {
       <ScrollToTopButton />
       <CookieConsent />
       <OfferNewsletterPopup />
-      {!isDiscoveryMode && !isReferralRoute && <Footer />}
+      {!isDiscoveryMode && <Footer />}
     </>
   );
 };
