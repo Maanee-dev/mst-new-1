@@ -15,9 +15,9 @@ const CookiePolicy: React.FC = () => {
       <section className="relative h-[40vh] md:h-[50vh] flex items-center justify-center overflow-hidden">
         <div className="absolute inset-0 z-0">
           <img 
-            src="https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&q=80&w=1920" 
+            src="https://images.unsplash.com/photo-1578922746465-3a805228b223?auto=format&fit=crop&q=80&w=1920" 
             className="w-full h-full object-cover" 
-            alt="Digital Connectivity"
+            alt="Maldives Resort"
           />
           <div className="absolute inset-0 bg-slate-950/70 backdrop-blur-[2px]" />
         </div>
