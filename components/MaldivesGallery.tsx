@@ -1,15 +1,11 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { motion, useAnimationFrame } from 'motion/react';
+import { useAnimationFrame } from 'motion/react';
 import { supabase, mapResort } from '../lib/supabase';
 
 interface GalleryImage {
   url: string;
   resort: string;
-  bw: boolean;
-  text: string;
 }
-
-
 
 const RESORT_NAMES = [
   'Patina Maldives',
@@ -19,13 +15,6 @@ const RESORT_NAMES = [
   'JOALI Maldives',
   'The Nautilus Maldives',
   'NH Collection Maldives Reethi Resort'
-];
-
-const BW_RESORTS = [
-  'Patina Maldives',
-  'One&Only Reethi Rah',
-  'Villa Nautica Paradise Island Resort',
-  'Sun Siyam Olhuveli'
 ];
 
 const GalleryRow: React.FC<{ rowImages: GalleryImage[]; direction: 'left' | 'right'; speed?: number }> = ({ rowImages, direction, speed = 1 }) => {
@@ -64,7 +53,7 @@ const GalleryRow: React.FC<{ rowImages: GalleryImage[]; direction: 'left' | 'rig
   return (
     <div 
       ref={scrollRef}
-      className="flex overflow-x-auto no-scrollbar py-8 cursor-grab active:cursor-grabbing select-none"
+      className="flex overflow-x-auto no-scrollbar py-4 cursor-grab active:cursor-grabbing select-none"
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
       onTouchStart={() => setIsHovered(true)}
@@ -76,7 +65,7 @@ const GalleryRow: React.FC<{ rowImages: GalleryImage[]; direction: 'left' | 'rig
             key={`${img.resort}-${idx}`}
             className="flex-shrink-0 w-[280px] md:w-[420px] relative group"
           >
-            <div className={`aspect-[4/3] rounded-[2.5rem] overflow-hidden shadow-2xl transition-all duration-1000 ${img.bw ? 'grayscale hover:grayscale-0' : ''}`}>
+            <div className="aspect-[4/3] rounded-[2.5rem] overflow-hidden shadow-2xl transition-all duration-1000">
               <img
                 src={img.url}
                 alt={img.resort}
@@ -84,12 +73,6 @@ const GalleryRow: React.FC<{ rowImages: GalleryImage[]; direction: 'left' | 'rig
                 referrerPolicy="no-referrer"
                 draggable={false}
               />
-            </div>
-            <div className="mt-6 px-4">
-              <span className="text-[9px] font-black text-sky-500 uppercase tracking-[0.5em] mb-2 block">{img.resort}</span>
-              <p className="text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest leading-relaxed line-clamp-1">
-                {img.text}
-              </p>
             </div>
           </div>
         ))}
@@ -117,13 +100,10 @@ const MaldivesGallery: React.FC = () => {
           const allImages: GalleryImage[] = [];
 
           mappedResorts.forEach(resort => {
-            const isBW = BW_RESORTS.includes(resort.name);
             resort.images.forEach(imgUrl => {
               allImages.push({
                 url: imgUrl,
-                resort: resort.name,
-                bw: isBW,
-                text: resort.shortDescription || `Experience the beauty of ${resort.name}.`
+                resort: resort.name
               });
             });
           });
@@ -153,34 +133,10 @@ const MaldivesGallery: React.FC = () => {
   const row2 = images.slice(half);
 
   return (
-    <section className="py-24 md:py-32 lg:py-48 bg-white dark:bg-slate-950 transition-colors overflow-hidden">
-      <div className="max-w-[1440px] mx-auto px-6 lg:px-12 mb-24 reveal active">
-        <div className="flex flex-col lg:flex-row justify-between items-start lg:items-end gap-12">
-          <div className="max-w-3xl">
-            <span className="text-[12px] font-black text-sky-500 uppercase tracking-[1.2em] mb-10 block">The Archipelago</span>
-            <h3 className="text-5xl md:text-7xl lg:text-9xl font-serif font-bold text-slate-900 dark:text-white tracking-tighter leading-[0.85]">
-              Island <br /> Perspectives.
-            </h3>
-          </div>
-          <div className="max-w-lg">
-            <p className="text-slate-400 dark:text-slate-500 text-[11px] font-black uppercase tracking-[0.5em] leading-[2]">
-              A curated visual journey through the most prestigious sanctuaries of the Maldives, captured in both timeless monochrome and vibrant color.
-            </p>
-          </div>
-        </div>
-      </div>
-
-      <div className="space-y-12">
+    <section className="py-12 md:py-24 bg-white dark:bg-slate-950 transition-colors overflow-hidden">
+      <div className="space-y-8">
         <GalleryRow rowImages={row1} direction="left" speed={1.2} />
-
         <GalleryRow rowImages={row2} direction="right" speed={1.5} />
-      </div>
-
-      <div className="max-w-[1440px] mx-auto px-6 lg:px-12 mt-32 text-center reveal active">
-        <div className="inline-flex items-center gap-6 text-[10px] font-black text-slate-300 dark:text-slate-700 uppercase tracking-[0.6em]">
-          <div className="w-16 h-px bg-slate-100 dark:bg-white/5"></div>
-          <div className="w-16 h-px bg-slate-100 dark:bg-white/5"></div>
-        </div>
       </div>
     </section>
   );
