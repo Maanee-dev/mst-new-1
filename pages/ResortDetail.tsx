@@ -361,10 +361,10 @@ const ResortDetail: React.FC = () => {
   return (
     <div className="bg-parchment dark:bg-slate-950 min-h-screen selection:bg-sky-100 selection:text-sky-900 pb-20 overflow-x-hidden transition-colors duration-700">
       <SEO 
-        title={`${resort.name} | Luxury Resort ${resort.atoll} Maldives`} 
-        description={`${resort.name} in ${resort.atoll} Atoll offers ${resort.shortDescription}. Experience the best overwater villas and private island luxury in the Maldives.`} 
+        title={resort.seoTitle || `${resort.name} | Luxury Resort ${resort.atoll} Maldives`} 
+        description={resort.seoDescription || `${resort.name} in ${resort.atoll} Atoll offers ${resort.shortDescription}. Experience the best overwater villas and private island luxury in the Maldives.`} 
         image={resort.images[0]}
-        keywords={[
+        keywords={resort.seoKeywords?.length > 0 ? resort.seoKeywords : [
           resort.name,
           `${resort.name} Maldives`,
           `${resort.name} ${resort.atoll}`,
@@ -377,6 +377,11 @@ const ResortDetail: React.FC = () => {
           'bespoke Maldives holidays'
         ]}
         type="hotel"
+        breadcrumbs={[
+          { name: 'Home', item: '/' },
+          { name: 'Resorts', item: '/resorts' },
+          { name: resort.name, item: `/resorts/${resort.slug}` }
+        ]}
         schema={{
           "@context": "https://schema.org",
           "@type": "Hotel",

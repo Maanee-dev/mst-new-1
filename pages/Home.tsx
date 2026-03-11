@@ -156,8 +156,10 @@ const Home: React.FC = () => {
       <SEO 
         title={t('seo.homeTitle')} 
         description={t('seo.homeDesc')}
-        isOrganization={true}
         keywords={t('seo.homeKeywords').split(', ')}
+        breadcrumbs={[
+          { name: 'Home', item: '/' }
+        ]}
       />
 
       {/* Hero Section */}

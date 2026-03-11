@@ -58,7 +58,14 @@ const BlogPostDetail: React.FC = () => {
         title={`${post.title} | Maldives Serenity Travel Journal`}
         description={post.excerpt}
         image={post.image}
-        article={true}
+        type="article"
+        publishedTime={post.date}
+        author={post.author}
+        breadcrumbs={[
+          { name: 'Home', item: '/' },
+          { name: 'Journal', item: '/stories' },
+          { name: post.title, item: `/stories/${post.slug}` }
+        ]}
       />
       <div className="relative h-[70vh] w-full overflow-hidden">
          <img src={post.image} alt={post.title} className="w-full h-full object-cover scale-105" />
