@@ -36,6 +36,7 @@
     "react-i18next": "^16.5.4",
     "react-leaflet": "^5.0.0",
     "react-router-dom": "7.1.5",
+    "recharts": "^3.8.0",
     "tailwind-merge": "^3.5.0",
     "tsx": "^4.21.0"
   },

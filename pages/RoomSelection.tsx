@@ -16,6 +16,7 @@ import { mapOffer } from '../lib/supabase';
 import { Link } from 'react-router-dom';
 import { EXPERIENCES } from '../constants';
 import { useBag } from '../context/BagContext';
+import BookingIntegration from '../components/referral/BookingIntegration';
 
 const RoomSelection: React.FC = () => {
   const { slug } = useParams<{ slug: string }>();
@@ -390,6 +391,10 @@ const RoomSelection: React.FC = () => {
                           );
                         })}
                       </div>
+                    </div>
+
+                    <div className="mb-10">
+                      <BookingIntegration />
                     </div>
 
                   <button 

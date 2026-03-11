@@ -47,6 +47,7 @@ const Footer: React.FC = () => {
               <li><Link to="/about" className="hover:text-sky-500 transition-colors">{t('footer.nav.heritage')}</Link></li>
               <li><Link to="/stories" className="hover:text-sky-500 transition-colors">{t('footer.nav.journal')}</Link></li>
               <li><Link to="/contact" className="hover:text-sky-500 transition-colors">{t('footer.nav.connect')}</Link></li>
+              <li><Link to="/referral" className="text-sky-500 hover:text-sky-600 transition-colors">Partner Program</Link></li>
               <li><Link to="/careers" className="hover:text-sky-500 transition-colors opacity-60 cursor-not-allowed">{t('footer.nav.careers')}</Link></li>
             </ul>
           </div>
