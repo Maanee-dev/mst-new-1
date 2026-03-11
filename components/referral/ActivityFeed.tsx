@@ -23,6 +23,23 @@ const StatusBadge: React.FC<{ status: ReferralStatus }> = ({ status }) => {
   );
 };
 
+const StageBadge: React.FC<{ stage: string }> = ({ stage }) => {
+  const styles: Record<string, string> = {
+    New: 'bg-slate-100 text-slate-600 border-slate-200',
+    Contacted: 'bg-sky-50 text-sky-600 border-sky-100',
+    'Proposal Sent': 'bg-indigo-50 text-indigo-600 border-indigo-100',
+    Negotiation: 'bg-amber-50 text-amber-600 border-amber-100',
+    'Closed Won': 'bg-emerald-50 text-emerald-600 border-emerald-100',
+    'Closed Lost': 'bg-rose-50 text-rose-600 border-rose-100',
+  };
+
+  return (
+    <span className={`px-2 py-0.5 rounded text-[8px] font-black uppercase tracking-widest border ${styles[stage] || styles.New}`}>
+      {stage}
+    </span>
+  );
+};
+
 const ActivityFeed: React.FC<ActivityFeedProps> = ({ activities }) => {
   if (activities.length === 0) {
     return (
@@ -55,7 +72,10 @@ const ActivityFeed: React.FC<ActivityFeedProps> = ({ activities }) => {
               </div>
               <div>
                 <p className="text-sm font-bold text-slate-900 dark:text-white">{activity.name}</p>
-                <p className="text-[10px] text-slate-400 dark:text-slate-500 font-medium">{new Date(activity.date).toLocaleDateString()}</p>
+                <div className="flex items-center gap-2 mt-0.5">
+                  <p className="text-[10px] text-slate-400 dark:text-slate-500 font-medium">{new Date(activity.date).toLocaleDateString()}</p>
+                  {activity.stage && <StageBadge stage={activity.stage} />}
+                </div>
               </div>
             </div>
             <div className="flex items-center gap-6">

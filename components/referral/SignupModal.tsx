@@ -214,9 +214,15 @@ const SignupModal: React.FC<SignupModalProps> = ({ isOpen, onClose, onSuccess })
                   <h2 className="text-3xl font-serif font-medium text-slate-900 dark:text-white mb-4 tracking-tight">Welcome to the Program!</h2>
                   <p className="text-slate-500 dark:text-slate-400 text-sm leading-relaxed mb-12">Your application has been approved. You can now start earning rewards.</p>
                   
-                  <div className="bg-slate-50 dark:bg-slate-800 p-8 rounded-3xl mb-12">
-                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.4em] mb-4">Your Referral Code</p>
-                    <p className="text-2xl font-black text-sky-600 tracking-[0.2em] uppercase">SARAH-J-2024</p>
+                  <div className="bg-slate-50 dark:bg-slate-800 p-8 rounded-3xl mb-12 space-y-6">
+                    <div>
+                      <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.4em] mb-4">Your Referral Code</p>
+                      <p className="text-2xl font-black text-sky-600 tracking-[0.2em] uppercase">SARAH-J-2024</p>
+                    </div>
+                    <div className="pt-6 border-t border-slate-200 dark:border-white/5">
+                      <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.4em] mb-4">Your Personalized Inquiry Link</p>
+                      <p className="text-xs font-bold text-slate-600 dark:text-slate-300 break-all">maldives-serenitytravels.com/inquiry/SARAH-J-2024</p>
+                    </div>
                   </div>
 
                   <button 

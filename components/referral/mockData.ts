@@ -13,14 +13,14 @@ export const MOCK_STATS: ReferrerStats = {
 };
 
 export const MOCK_ACTIVITIES: ReferralActivity[] = [
-  { id: '1', date: '2024-03-10', name: 'James Wilson', status: 'Confirmed', value: 4500, reward: 50 },
-  { id: '2', date: '2024-03-09', name: 'Sarah Chen', status: 'Booked', value: 3200, reward: 50 },
-  { id: '3', date: '2024-03-08', name: 'Michael Brown', status: 'Inquired' },
+  { id: '1', date: '2024-03-10', name: 'James Wilson', status: 'Confirmed', stage: 'Proposal Sent', value: 4500, reward: 50 },
+  { id: '2', date: '2024-03-09', name: 'Sarah Chen', status: 'Booked', stage: 'Negotiation', value: 3200, reward: 50 },
+  { id: '3', date: '2024-03-08', name: 'Michael Brown', status: 'Inquired', stage: 'Contacted' },
   { id: '4', date: '2024-03-07', name: 'Anonymous', status: 'Clicked' },
-  { id: '5', date: '2024-03-05', name: 'Emma Davis', status: 'Paid', value: 8900, reward: 50 },
-  { id: '6', date: '2024-03-01', name: 'Robert Miller', status: 'Confirmed', value: 12000, reward: 50 },
-  { id: '7', date: '2024-02-28', name: 'Linda Taylor', status: 'Paid', value: 5600, reward: 50 },
-  { id: '8', date: '2024-02-25', name: 'David Garcia', status: 'Inquired' },
+  { id: '5', date: '2024-03-05', name: 'Emma Davis', status: 'Paid', stage: 'Closed Won', value: 8900, reward: 50 },
+  { id: '6', date: '2024-03-01', name: 'Robert Miller', status: 'Confirmed', stage: 'Closed Won', value: 12000, reward: 50 },
+  { id: '7', date: '2024-02-28', name: 'Linda Taylor', status: 'Paid', stage: 'Closed Won', value: 5600, reward: 50 },
+  { id: '8', date: '2024-02-25', name: 'David Garcia', status: 'Inquired', stage: 'New' },
 ];
 
 export const MOCK_CHART_DATA: MonthlyEarnings[] = [
